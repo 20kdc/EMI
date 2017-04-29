@@ -1,0 +1,3 @@
+Firstly, if the Virtual Size is under the raw data size, the actual size is the raw data size.
+Secondly, if the raw data pointer is 0, then it's 100% BSS - the raw data size might well be used even in this case, oddly.
+Thirdly, I have so far observed no EXE with the RVA sections out of order.
