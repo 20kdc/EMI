@@ -27,7 +27,7 @@ public class PE32EFB implements IEFB {
     public PE32FileStubSection preHeadSection = new PE32FileStubSection();
     // This is 0x18 bytes and has no data.
     public PE32FileHeadSection headSection = new PE32FileHeadSection();
-    public DataFileSection optHeadSection = new DataFileSection(new byte[0], "data", "Optional Header");
+    public PE32FileOptHeadSection optHeadSection = new PE32FileOptHeadSection();
     public PE32FileSectionHeadersSection secHeadSection = new PE32FileSectionHeadersSection(0);
 
     public LinkedList<IFileSection> fs = new LinkedList<IFileSection>();
@@ -49,6 +49,8 @@ public class PE32EFB implements IEFB {
 
         if (bb.getInt() != 0x4550)
             throw new RuntimeException("bad PE header");
+
+        headSection = new PE32FileHeadSection();
         headSection.machine = bb.getShort();
         int sections = bb.getShort() & 0xFFFF;
         headSection.tds = bb.getInt();
@@ -58,9 +60,12 @@ public class PE32EFB implements IEFB {
         headSection.symC = bb.getInt();
         int optHeadSize = bb.getShort() & 0xFFFF;
         headSection.chars = bb.getShort();
-        byte[] opthead = new byte[optHeadSize];
-        bb.get(opthead);
-        optHeadSection = optHeadSection.changedData(opthead);
+
+        byte[] optHead = new byte[optHeadSize];
+        bb.get(optHead);
+        ByteBuffer bb2 = ByteBuffer.wrap(optHead);
+        bb2.order(ByteOrder.LITTLE_ENDIAN);
+        optHeadSection = new PE32FileOptHeadSection(bb2);
         preHeadSection = preHeadSection.changedData(phd);
         secHeadSection = new PE32FileSectionHeadersSection(sections);
 
@@ -201,7 +206,7 @@ public class PE32EFB implements IEFB {
         // Firstly, extract file header, DOS Stub, and Opt. Header (only marked DFS) sections.
         PE32FileStubSection phs = null;
         PE32FileHeadSection hs = null;
-        DataFileSection ohs = null;
+        PE32FileOptHeadSection ohs = null;
 
         fs.clear();
         int sCount = 0;
@@ -210,13 +215,10 @@ public class PE32EFB implements IEFB {
                 phs = (PE32FileStubSection) ifs;
             if (ifs instanceof PE32FileHeadSection)
                 hs = (PE32FileHeadSection) ifs;
-            if (ifs instanceof DataFileSection) {
-                if (((DataFileSection) ifs).type.equals("data")) {
-                    ohs = (DataFileSection) ifs;
-                } else {
-                    fs.add(ifs);
-                }
-            }
+            if (ifs instanceof PE32FileOptHeadSection)
+                ohs = (PE32FileOptHeadSection) ifs;
+            if (ifs instanceof DataFileSection)
+                fs.add(ifs);
             if (ifs instanceof PE32FileSection) {
                 fs.add(ifs);
                 sCount++;
@@ -273,11 +275,11 @@ public class PE32EFB implements IEFB {
         bb.putInt(headSection.tds);
         bb.putInt(headSection.symO);
         bb.putInt(headSection.symC);
-        bb.putShort((short) optHeadSection.d.length);
+        bb.putShort((short) optHeadSection.fileDataLength());
         bb.putShort(headSection.chars);
 
         // Basic header built...
-        bb.put(optHeadSection.d);
+        optHeadSection.save(bb);
         // Section headers...
         for (PE32FileSection ifs : pfs) {
             bb.put(ifs.name);
@@ -318,14 +320,15 @@ public class PE32EFB implements IEFB {
     public void removeRelocationData() {
         headSection.chars |= 1;
         // Check for BASE RELOCATION reference and wipe it.
-        if (optHeadSection.d.length >= 0x128) {
-            byte[] copy = new byte[optHeadSection.d.length];
+        byte[] data = optHeadSection.data();
+        if (data.length >= 48) {
+            byte[] copy = new byte[data.length];
             for (int i = 0; i < copy.length; i++)
-                copy[i] = optHeadSection.d[i];
+                copy[i] = data[i];
             ByteBuffer bb = ByteBuffer.wrap(copy);
             bb.order(ByteOrder.LITTLE_ENDIAN);
-            bb.putInt(0x120, 0);
-            bb.putInt(0x124, 0);
+            bb.putInt(40, 0);
+            bb.putInt(44, 0);
             optHeadSection = optHeadSection.changedData(copy);
         }
     }
