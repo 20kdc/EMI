@@ -6,7 +6,7 @@
 package emi.backend;
 
 /**
- * Blob of data.
+ * DataFileSection with a fixed RVA and no BSS
  * Created on 4/28/17.
  */
 public class ImmobileVMDataFileSection extends DataFileSection implements IEFB.IVMFileSection {

@@ -15,9 +15,8 @@ import java.util.LinkedList;
  * elements:
  * size size, sets structure size
  * data byte, magic numbers & such
+ * skip bytes, skips some amount of bytes
  * u(32/16/8) name, accesses property
- * <p>
- * <p>
  * Created on 5/2/17.
  */
 public class StructUtils {

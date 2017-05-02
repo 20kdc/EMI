@@ -10,13 +10,14 @@ import java.util.LinkedList;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        IBackend r = (IBackend) (BackendRegistry.class.getField(args[0]).get(null));
+        IBackend r = BackendRegistry.get(args[0]);
         FileInputStream fis = new FileInputStream(args[1]);
         byte[] data = new byte[fis.available()];
         if (fis.read(data) != data.length) {
             fis.close();
             throw new IOException("Couldn't read everything available in the file.");
         }
+        fis.close();
 
         IBackend.IBackendFile ibf = r.openFile(data);
         if (ibf.fileContainsRelocationData())
@@ -36,6 +37,7 @@ public class Main {
                         fis.close();
                         throw new IOException("Couldn't read everything available in the file.");
                     }
+                    fis.close();
 
                     for (String o : ibf.runDLOperation(tkn, data))
                         System.out.println(o);

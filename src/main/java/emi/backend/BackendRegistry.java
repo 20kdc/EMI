@@ -16,4 +16,19 @@ import emi.backend.efb.pe32.PE32EFB;
 public class BackendRegistry {
     public static IBackend dos_exe = new EFBWrapperBackend(new MSDOSEFB());
     public static IBackend pe32_exe = new EFBWrapperBackend(new PE32EFB());
+    public static String[] backends = new String[]{
+            "dos_exe",
+            "pe32_exe"
+    };
+
+    public static IBackend get(String arg) {
+        try {
+            return (IBackend) (BackendRegistry.class.getField(arg).get(null));
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("No such backend: " + arg + ".");
+    }
 }
