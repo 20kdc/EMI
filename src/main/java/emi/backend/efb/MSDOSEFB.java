@@ -21,7 +21,7 @@ import java.nio.ByteOrder;
 public class MSDOSEFB implements IEFB {
     public MSDOSHeaderFileSection header = new MSDOSHeaderFileSection();
     public ImmobileVMDataFileSection data = new ImmobileVMDataFileSection(new byte[0], "rwx", "Code", 0);
-    public DataFileSection waste = new DataFileSection(new byte[0], "", "Waste Footer");
+    public DataFileSection waste = new DataFileSection(new byte[0], "waste", "Waste Footer");
 
     class MSDOSHeaderFileSection implements IFileSection {
         public short numRelocs;

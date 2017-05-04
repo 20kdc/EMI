@@ -34,7 +34,7 @@ public class PrimaryInterface {
         target = ibf;
 
         management = new EMISectionManagement(this);
-        jp.add(management, BorderLayout.NORTH);
+        jp.add(management, BorderLayout.CENTER);
 
         mainFrame = new JFrame(ibf.toString());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
