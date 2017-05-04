@@ -7,6 +7,9 @@ package emi.frontend;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -17,29 +20,118 @@ public class ArgBuilder {
     public Component piece;
     public JTextField jtf;
     public JButton jbt;
-    public LinkedList<String> words, wordsDisplay;
-    public int index = 0;
+    public String jbtValue;
 
-    public ArgBuilder(String type, LinkedList<String> w, LinkedList<String> wD, Runnable hidePar, Runnable showPar) {
-        if (type.equals("enum") || type.equals("section-idx")) {
-            words = w;
-            wordsDisplay = wD;
-            piece = jbt = Main.newButton(wordsDisplay.getFirst(), new Runnable() {
+    public ArgBuilder(final String type, final LinkedList<String> w, final LinkedList<String> wD, final String oldval, final Runnable hidePar, final Runnable showPar) {
+        if (type.equals("enum") || type.equals("flags") || type.equals("section-idx")) {
+            String text = oldval;
+            if (!type.equals("flags"))
+                text = wD.get(findWord(w, oldval));
+            piece = jbt = Main.newButton(text, new Runnable() {
                 @Override
                 public void run() {
-                    index++;
-                    index %= words.size();
-                    jbt.setText(wordsDisplay.get(index));
+                    hidePar.run();
+                    final JFrame jf = new JFrame("Set value...");
+                    jf.setSize(320, 240);
+                    final JList jp = new JList();
+                    jf.setContentPane(jp);
+                    jf.addWindowListener(new WindowListener() {
+                        @Override
+                        public void windowOpened(WindowEvent windowEvent) {
+                        }
+
+                        @Override
+                        public void windowClosing(WindowEvent windowEvent) {
+                            if (type.equals("flags")) {
+                                finishFlags(jp);
+                            } else {
+                                finishEnum(jp);
+                            }
+                            showPar.run();
+                        }
+
+                        @Override
+                        public void windowClosed(WindowEvent windowEvent) {
+                        }
+
+                        @Override
+                        public void windowIconified(WindowEvent windowEvent) {
+                        }
+
+                        @Override
+                        public void windowDeiconified(WindowEvent windowEvent) {
+                        }
+
+                        @Override
+                        public void windowActivated(WindowEvent windowEvent) {
+                        }
+
+                        @Override
+                        public void windowDeactivated(WindowEvent windowEvent) {
+                        }
+                    });
+                    // damned if you do, damned if you don't
+                    DefaultListModel dlm = new DefaultListModel();
+                    jp.setModel(dlm);
+                    for (String s : wD)
+                        dlm.addElement(s);
+                    if (type.equals("flags")) {
+                        showFlags(jp);
+                    } else {
+                        showEnum(jp);
+                    }
+                    jf.setVisible(true);
+                }
+
+                // This fills the contents of the frame.
+
+                private void showFlags(JList jf) {
+                    HashSet<Integer> it = new HashSet<Integer>();
+                    for (String s : oldval.split(" "))
+                        it.add(findWord(w, s));
+                    int[] indices = new int[it.size()];
+                    int idx = 0;
+                    for (Integer i : it)
+                        indices[idx++] = i;
+                    jf.setSelectedIndices(indices);
+                }
+
+                private void showEnum(JList jf) {
+                    jf.setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
+                    jf.setSelectedIndex(findWord(w, oldval));
+                }
+
+                private void finishFlags(JList jf) {
+                    String r = "";
+                    for (int i : jf.getSelectedIndices()) {
+                        if (r.length() != 0)
+                            r += " ";
+                        r += w.get(i);
+                    }
+                    jbt.setText(r);
+                    jbtValue = r;
+                }
+
+                private void finishEnum(JList jf) {
+                    jbt.setText(wD.get(jf.getSelectedIndex()));
+                    jbtValue = w.get(jf.getSelectedIndex());
                 }
             });
         } else {
-            piece = jtf = new JTextField();
+            piece = jtf = new JTextField(oldval);
         }
+    }
+
+    private int findWord(LinkedList<String> w, String oldval) {
+        for (int i = 0; i < w.size(); i++)
+            if (w.get(i).equals(oldval))
+                return i;
+        return -1;
     }
 
     public String getResult() {
         if (jbt != null)
-            return words.get(index);
+            return jbtValue;
         return jtf.getText();
     }
 }

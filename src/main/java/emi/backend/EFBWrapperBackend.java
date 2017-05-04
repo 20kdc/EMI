@@ -53,7 +53,7 @@ public class EFBWrapperBackend implements IBackend {
                             "swap-sections section section-idx section section-idx",
                             "dl-set-section section section-idx",
                             "ds-get-section section section-idx",
-                            "ds-save",
+                            "ds-save"
                     };
                 }
                 if (arguments[0].equals("list-sections")) {

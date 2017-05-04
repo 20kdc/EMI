@@ -39,12 +39,14 @@ public class ToolInterface {
             String type = cmd[argIndex++];
             LinkedList<String> words = new LinkedList<String>();
             LinkedList<String> wordsDisplay = new LinkedList<String>();
-            if (type.equals("enum"))
+            if (type.equals("enum") || type.equals("flags")) {
                 while (!cmd[argIndex].equals(";")) {
                     String w = cmd[argIndex++];
                     words.add(w);
                     wordsDisplay.add(w);
                 }
+                argIndex++;
+            }
             if (type.equals("section-idx")) {
                 String[] s = ibf.runOperation(new String[]{"list-sections"});
                 int index = 0;
@@ -55,7 +57,10 @@ public class ToolInterface {
                 }
             }
             arg.setLayout(new GridLayout(1, 1));
-            ArgBuilder res = new ArgBuilder(type, words, wordsDisplay, new Runnable() {
+            String defaultval = "";
+            if (type.equals("enum") || type.equals("section-idx"))
+                defaultval = words.getFirst();
+            ArgBuilder res = new ArgBuilder(type, words, wordsDisplay, defaultval, new Runnable() {
                 @Override
                 public void run() {
                     mainFrame.setVisible(false);
