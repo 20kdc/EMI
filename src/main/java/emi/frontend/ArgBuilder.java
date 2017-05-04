@@ -17,10 +17,21 @@ public class ArgBuilder {
     public Component piece;
     public JTextField jtf;
     public JButton jbt;
+    public LinkedList<String> words, wordsDisplay;
+    public int index = 0;
 
-    public ArgBuilder(String type, LinkedList<String> words, Runnable hidePar, Runnable showPar) {
+    public ArgBuilder(String type, LinkedList<String> w, LinkedList<String> wD, Runnable hidePar, Runnable showPar) {
         if (type.equals("enum") || type.equals("section-idx")) {
-            piece = jbt = new JButton(words.getFirst());
+            words = w;
+            wordsDisplay = wD;
+            piece = jbt = Main.newButton(wordsDisplay.getFirst(), new Runnable() {
+                @Override
+                public void run() {
+                    index++;
+                    index %= words.size();
+                    jbt.setText(wordsDisplay.get(index));
+                }
+            });
         } else {
             piece = jtf = new JTextField();
         }
@@ -28,7 +39,7 @@ public class ArgBuilder {
 
     public String getResult() {
         if (jbt != null)
-            return jbt.getText();
+            return words.get(index);
         return jtf.getText();
     }
 }

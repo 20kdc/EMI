@@ -79,7 +79,9 @@ public class EMISectionManagement extends Canvas {
         int y = 0;
         for (int i = 0; i < sections.length; i++) {
             EMISMS sms = sections[i];
-            double h = sms.length / (double) totalLen;
+            double h = 0;
+            if (totalLen != 0)
+                h = sms.length / (double) totalLen;
             h *= getHeight();
             h = Math.floor(h);
             if (i == sections.length - 1)

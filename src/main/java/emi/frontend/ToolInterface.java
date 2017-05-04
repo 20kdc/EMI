@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.FileOutputStream;
 import java.util.LinkedList;
 
 /**
@@ -24,7 +25,7 @@ public class ToolInterface {
     public byte[] data;
     public LinkedList<ArgBuilder> argBuilders;
 
-    public ToolInterface(String[] cmd, Runnable onDie, IBackend.IBackendFile ibf) {
+    public ToolInterface(final String[] cmd, Runnable onDie, final IBackend.IBackendFile ibf) {
         file = ibf;
         mainFrame = new JFrame("EMI " + cmd[0]);
 
@@ -37,11 +38,24 @@ public class ToolInterface {
             arg.setBorder(BorderFactory.createTitledBorder(cmd[argIndex++]));
             String type = cmd[argIndex++];
             LinkedList<String> words = new LinkedList<String>();
+            LinkedList<String> wordsDisplay = new LinkedList<String>();
             if (type.equals("enum"))
-                while (!cmd[argIndex].equals(";"))
-                    words.add(cmd[argIndex++]);
+                while (!cmd[argIndex].equals(";")) {
+                    String w = cmd[argIndex++];
+                    words.add(w);
+                    wordsDisplay.add(w);
+                }
+            if (type.equals("section-idx")) {
+                String[] s = ibf.runOperation(new String[]{"list-sections"});
+                int index = 0;
+                for (String section : s) {
+                    words.add(Integer.toString(index));
+                    wordsDisplay.add(index + ": " + section.split(":")[3]);
+                    index++;
+                }
+            }
             arg.setLayout(new GridLayout(1, 1));
-            ArgBuilder res = new ArgBuilder(type, words, new Runnable() {
+            ArgBuilder res = new ArgBuilder(type, words, wordsDisplay, new Runnable() {
                 @Override
                 public void run() {
                     mainFrame.setVisible(false);
@@ -63,8 +77,38 @@ public class ToolInterface {
         iFrame.add(Main.newButton("Confirm", new Runnable() {
             @Override
             public void run() {
+                JFileChooser jfc = new JFileChooser();
                 mainFrame.setVisible(false);
-                onClose.run();
+                if (cmd[0].startsWith("ds-"))
+                    if (jfc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+                        onClose.run();
+                        return;
+                    }
+                try {
+                    String[] args = new String[argBuilders.size() + 1];
+                    String[] out = new String[]{"Success."};
+                    args[0] = cmd[0];
+                    for (int i = 0; i < args.length - 1; i++)
+                        args[i + 1] = argBuilders.get(i).getResult();
+                    if (cmd[0].startsWith("ds-")) {
+                        byte[] bt = ibf.runDSOperation(args);
+                        FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
+                        fos.write(bt);
+                        fos.close();
+                    } else if (cmd[0].startsWith("dl-")) {
+                        out = ibf.runDLOperation(args, data);
+                    } else {
+                        out = ibf.runOperation(args);
+                    }
+                    String str = "";
+                    for (String f : out)
+                        str += f + "\r\n";
+                    onClose.run();
+                    Main.showText("Output", str);
+                } catch (Throwable e) {
+                    Main.report("failed " + cmd[0], e);
+                    mainFrame.setVisible(true);
+                }
             }
         }));
         mainFrame.setContentPane(iFrame);
