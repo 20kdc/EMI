@@ -19,28 +19,40 @@ public class EFBWrapperBackend implements IBackend {
         b = efb;
     }
 
-    @Override
-    public IBackendFile openFile(byte[] data) throws IOException {
-        final IEFB r = b.createBlank();
-        r.loadFile(data);
+    private IBackendFile convertEFB(final IEFB r) {
         return new IBackendFile() {
             @Override
             public String[] runOperation(String[] arguments) {
                 if (arguments[0].equals("help")) {
+                    checkArgs(new boolean[0], arguments);
+                    String cse = "";
+                    for (String s : r.creatableSections())
+                        cse += " " + s;
                     return new String[]{
+                            // Format:
+                            // <command> <name type...>
+                            // where type can be one of:
+                            // enum <args separated by spaces> ;
+                            // section-idx
+                            // num
+                            // str
+                            // in practice, tools accessible via other means should be blacklisted from GUI
+                            // Idea is that this is extendable via decorator backends,
+                            //  allowing custom tools to be developed specific to given needs
+                            //  and accessible via console + GUI
+                            // (PE32 resource relocation!!!)
                             "list-sections",
-                            "create-section-types",
-                            "create-section tid",
-                            "set-section-rva idx rva",
-                            "set-section-len idx len",
-                            "list-section-keys idx",
-                            "get-section-value idx key",
-                            "set-section-value idx key val",
+                            "create-section type enum" + cse + " ;",
+                            "set-section-rva section section-idx rva num",
+                            "set-section-len section section-idx len num",
+                            "list-section-keys section section-idx",
+                            "get-section-value section section-idx key str",
+                            "set-section-value section section-idx key str value str",
                             "remove-relocation",
-                            "remove-section idx",
-                            "swap-sections idx",
-                            "dl-set-section idx",
-                            "ds-get-section idx",
+                            "remove-section section section-idx",
+                            "swap-sections section section-idx section section-idx",
+                            "dl-set-section section section-idx",
+                            "ds-get-section section section-idx",
                             "ds-save",
                     };
                 }
@@ -61,17 +73,13 @@ public class EFBWrapperBackend implements IBackend {
                     }
                     return r;
                 }
-                if (arguments[0].equals("create-section-types")) {
-                    checkArgs(new boolean[0], arguments);
-                    return r.creatableSections();
-                }
                 if (arguments[0].equals("create-section")) {
-                    int sn = (int) (long) (checkArgs(new boolean[]{true}, arguments)[0]);
+                    checkArgs(new boolean[]{false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     IEFB.IFileSection[] fs2 = new IEFB.IFileSection[fs.length + 1];
                     for (int i = 0; i < fs.length; i++)
                         fs[i] = fs2[i];
-                    fs2[fs.length] = r.createSection(sn);
+                    fs2[fs.length] = r.createSection(arguments[0]);
                     r.changeSections(fs2);
                     return new String[]{
                             "Successfully created section."
@@ -189,5 +197,17 @@ public class EFBWrapperBackend implements IBackend {
                 return r.fileContainsRelocationData();
             }
         };
+    }
+
+    @Override
+    public IBackendFile openFile(byte[] data) throws IOException {
+        IEFB r = b.createBlank();
+        r.loadFile(data);
+        return convertEFB(r);
+    }
+
+    @Override
+    public IBackendFile createFile() {
+        return convertEFB(b.createBlank());
     }
 }

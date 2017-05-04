@@ -16,6 +16,8 @@ import java.io.IOException;
 public interface IBackend {
     IBackendFile openFile(byte[] data) throws IOException;
 
+    IBackendFile createFile();
+
     interface IBackendFile {
         // Can throw a RuntimeException on issue. Other kinds of exception mean a system error.
         String[] runOperation(String[] arguments);

@@ -11,15 +11,22 @@ import java.util.LinkedList;
 public class Main {
     public static void main(String[] args) throws Exception {
         IBackend r = BackendRegistry.get(args[0]);
-        FileInputStream fis = new FileInputStream(args[1]);
-        byte[] data = new byte[fis.available()];
-        if (fis.read(data) != data.length) {
+        IBackend.IBackendFile ibf;
+        if (args.length == 2) {
+            FileInputStream fis = new FileInputStream(args[1]);
+            byte[] data = new byte[fis.available()];
+            if (fis.read(data) != data.length) {
+                fis.close();
+                throw new IOException("Couldn't read everything available in the file.");
+            }
             fis.close();
-            throw new IOException("Couldn't read everything available in the file.");
-        }
-        fis.close();
 
-        IBackend.IBackendFile ibf = r.openFile(data);
+            ibf = r.openFile(data);
+        } else if (args.length == 1) {
+            ibf = r.createFile();
+        } else {
+            throw new RuntimeException("EMI command-line args: <backend> [<file>]");
+        }
         if (ibf.fileContainsRelocationData())
             System.out.println("File contains relocation data.");
         System.out.println("File validated - ready!");
@@ -31,8 +38,8 @@ public class Main {
                 if (tkn[0].startsWith("dl-")) {
                     tkn[0] = tkn[0].substring(3);
 
-                    fis = new FileInputStream(args[1]);
-                    data = new byte[fis.available()];
+                    FileInputStream fis = new FileInputStream(args[1]);
+                    byte[] data = new byte[fis.available()];
                     if (fis.read(data) != data.length) {
                         fis.close();
                         throw new IOException("Couldn't read everything available in the file.");

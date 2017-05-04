@@ -9,11 +9,14 @@ import emi.backend.BackendRegistry;
 import emi.backend.IBackend;
 
 import javax.swing.*;
+import javax.swing.text.DefaultStyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * GUI frontend.
@@ -47,8 +50,8 @@ public class Main {
                             IBackend.IBackendFile ibf = ib.openFile(data);
                             new PrimaryInterface(ibf);
                             jf.setVisible(false);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        } catch (Throwable e) {
+                            Main.report("While loading file", e);
                         }
                     }
                 }
@@ -60,7 +63,7 @@ public class Main {
         jf.setVisible(true);
     }
 
-    private static JButton newButton(String s, final Runnable runnable) {
+    public static JButton newButton(String s, final Runnable runnable) {
         JButton jb = new JButton(s);
         jb.addActionListener(new ActionListener() {
             @Override
@@ -69,5 +72,23 @@ public class Main {
             }
         });
         return jb;
+    }
+
+    public static void report(String reason, Throwable e) {
+        // Show error.
+        System.err.println("starting exception handler");
+        e.printStackTrace();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        pw.println(reason);
+        e.printStackTrace(pw);
+        showText("system error", sw.toString());
+    }
+
+    public static void showText(String s, String s1) {
+        JFrame report = new JFrame(s);
+        report.setSize(320, 200);
+        report.setContentPane(new JScrollPane(new JTextArea(s1)));
+        report.setVisible(true);
     }
 }

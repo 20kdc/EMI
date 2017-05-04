@@ -66,7 +66,7 @@ public interface IEFB {
     String[] creatableSections();
 
     // Creates a valid section from scratch, positions it somewhere & such.
-    IFileSection createSection(int tidx);
+    IFileSection createSection(String type);
 
     // File sections in the file, including "dead space".
     // It is safe to modify the returned array.

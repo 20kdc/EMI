@@ -176,10 +176,10 @@ public class PE32EFB implements IEFB {
     }
 
     @Override
-    public IFileSection createSection(int tidx) {
-        if (tidx == 0)
+    public IFileSection createSection(String tidx) {
+        if (tidx.equals("waste"))
             return makeWaste(new byte[0x1000]);
-        if (tidx != 1)
+        if (!tidx.equals("section"))
             throw new RuntimeException("There is only one kind of section creatable.");
         PE32FileSection s = new PE32FileSection();
         long maxRVA = 0;

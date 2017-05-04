@@ -9,6 +9,7 @@ import emi.backend.DataFileSection;
 import emi.backend.IEFB;
 import emi.backend.ImmobileVMDataFileSection;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -207,7 +208,7 @@ public class MSDOSEFB implements IEFB {
     }
 
     @Override
-    public IFileSection createSection(int idx) {
+    public IFileSection createSection(String idx) {
         throw new RuntimeException("Cannot create sections.");
     }
 
@@ -228,11 +229,20 @@ public class MSDOSEFB implements IEFB {
             throw new RuntimeException("First section must be a header.");
         if ((!(file[1] instanceof ImmobileVMDataFileSection)) || (!file[1].type().equals("rwx")))
             throw new RuntimeException("Second section must be the code section.");
-        if ((!(file[2] instanceof DataFileSection)) || (!file[2].type().equals("")))
-            throw new RuntimeException("Third section must be the waste data section.");
+        // shouldn't really happen, but just in case
+        ByteArrayOutputStream res = new ByteArrayOutputStream();
+        for (int i = 2; i < file.length; i++) {
+            if ((!(file[i] instanceof DataFileSection)) || (!file[2].type().equals("waste")))
+                throw new RuntimeException("Section indexes >= 2 are waste data only!");
+            try {
+                res.write(file[i].data());
+            } catch (IOException e) {
+                throw new RuntimeException("WTF IO Exception");
+            }
+        }
         header = (MSDOSHeaderFileSection) file[0];
         data = (ImmobileVMDataFileSection) file[1];
-        waste = (DataFileSection) file[2];
+        waste = waste.changedData(res.toByteArray());
     }
 
     @Override
