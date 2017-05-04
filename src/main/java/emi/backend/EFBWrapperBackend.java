@@ -78,8 +78,8 @@ public class EFBWrapperBackend implements IBackend {
                     IEFB.IFileSection[] fs = r.fileSections();
                     IEFB.IFileSection[] fs2 = new IEFB.IFileSection[fs.length + 1];
                     for (int i = 0; i < fs.length; i++)
-                        fs[i] = fs2[i];
-                    fs2[fs.length] = r.createSection(arguments[0]);
+                        fs2[i] = fs[i];
+                    fs2[fs.length] = r.createSection(arguments[1]);
                     r.changeSections(fs2);
                     return new String[]{
                             "Successfully created section."

@@ -56,6 +56,8 @@ public class PrimaryInterface {
 
         for (String s : target.runOperation(new String[]{"help"})) {
             final String[] data = s.split(" ");
+            if (commandBlacklisted(data[0]))
+                continue;
             bS.add(data[0]);
             bR.add(new Runnable() {
                 @Override
@@ -104,5 +106,15 @@ public class PrimaryInterface {
         mainFrame.setContentPane(jp);
         mainFrame.setSize(240, 320);
         mainFrame.setVisible(true);
+    }
+
+    private boolean commandBlacklisted(String dat) {
+        if (dat.equals("list-section-keys"))
+            return false;
+        if (dat.equals("get-section-value"))
+            return false;
+        if (dat.equals("set-section-value"))
+            return false;
+        return false;
     }
 }

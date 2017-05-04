@@ -93,8 +93,12 @@ public class ToolInterface {
                     String[] args = new String[argBuilders.size() + 1];
                     String[] out = new String[]{"Success."};
                     args[0] = cmd[0];
-                    for (int i = 0; i < args.length - 1; i++)
+                    System.err.print(cmd[0]);
+                    for (int i = 0; i < args.length - 1; i++) {
                         args[i + 1] = argBuilders.get(i).getResult();
+                        System.err.print(" " + args[i + 1]);
+                    }
+                    System.err.println();
                     if (cmd[0].startsWith("ds-")) {
                         byte[] bt = ibf.runDSOperation(args);
                         FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
