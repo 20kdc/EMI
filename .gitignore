@@ -1,4 +1,7 @@
+# useless stuff
 .idea/workspace.xml
+.idea/compiler.xml
+
 out
 Test.exe
 TestO.exe
