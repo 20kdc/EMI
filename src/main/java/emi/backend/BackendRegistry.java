@@ -6,6 +6,7 @@
 package emi.backend;
 
 import emi.backend.efb.MSDOSEFB;
+import emi.backend.efb.pe32.PE32BackendExtension;
 import emi.backend.efb.pe32.PE32EFB;
 
 /**
@@ -15,7 +16,7 @@ import emi.backend.efb.pe32.PE32EFB;
  */
 public class BackendRegistry {
     public static IBackend dos_exe = new EFBWrapperBackend(new MSDOSEFB());
-    public static IBackend pe32_exe = new EFBWrapperBackend(new PE32EFB());
+    public static IBackend pe32_exe = new ExtenderBackend(new EFBWrapperBackend(new PE32EFB()), new IBackendExtension[] {new PE32BackendExtension()});
     public static String[] backends = new String[]{
             "dos_exe",
             "pe32_exe"

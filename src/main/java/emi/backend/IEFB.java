@@ -9,6 +9,7 @@ import java.io.IOException;
 
 /**
  * The "behind the scenes" stuff in an IBackendFile.
+ * Note that the immutable parts of the API are an attempt to ensure an EFB always remains in a *consistent state*.
  * Created on 4/28/17.
  */
 public interface IEFB {
@@ -78,8 +79,4 @@ public interface IEFB {
     void changeSections(IFileSection[] file);
 
     byte[] saveFile();
-
-    boolean fileContainsRelocationData();
-
-    void removeRelocationData();
 }

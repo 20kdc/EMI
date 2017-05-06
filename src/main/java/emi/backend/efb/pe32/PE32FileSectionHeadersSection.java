@@ -55,6 +55,6 @@ public class PE32FileSectionHeadersSection implements IEFB.IFileSection {
 
     @Override
     public IEFB.IFileSection changedData(byte[] data) {
-        return null;
+        throw new RuntimeException("No data to change");
     }
 }

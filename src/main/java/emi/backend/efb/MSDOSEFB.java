@@ -264,17 +264,4 @@ public class MSDOSEFB implements IEFB {
         bb.put(waste.d);
         return b;
     }
-
-    // Technically this is a lie, but the relocation data isn't "traditional" -
-    //  removing it will break the program.
-
-    @Override
-    public boolean fileContainsRelocationData() {
-        return false;
-    }
-
-    @Override
-    public void removeRelocationData() {
-        throw new RuntimeException("Relocation data doesn't exist in this format.");
-    }
 }

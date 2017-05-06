@@ -27,8 +27,6 @@ public class Main {
         } else {
             throw new RuntimeException("EMI command-line args: <backend> [<file>]");
         }
-        if (ibf.fileContainsRelocationData())
-            System.out.println("File contains relocation data.");
         System.out.println("File validated - ready!");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {

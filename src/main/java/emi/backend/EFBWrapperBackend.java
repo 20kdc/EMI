@@ -10,6 +10,8 @@ import java.util.LinkedList;
 
 /**
  * Wraps an EFB to get a usable backend.
+ * This is responsible for everything important the GUI talks to in order to get user-friendly output.
+ * Essentially, this is the interface to the whole system.
  * Created on 4/28/17.
  */
 public class EFBWrapperBackend implements IBackend {
@@ -48,7 +50,6 @@ public class EFBWrapperBackend implements IBackend {
                             "list-section-keys section section-idx",
                             "get-section-value section section-idx key str",
                             "set-section-value section section-idx key str value str",
-                            "remove-relocation",
                             "remove-section section section-idx",
                             "swap-sections section section-idx section section-idx",
                             "dl-set-section section section-idx",
@@ -117,14 +118,9 @@ public class EFBWrapperBackend implements IBackend {
                     Long[] sn = checkArgs(new boolean[]{true, false, false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     IEFB.IFileSection fsb = fs[(int) (long) sn[0]];
-                    fs[(int) (long) sn[0]] = fsb.changeValue(arguments[1], arguments[2]);
+                    fs[(int) (long) sn[0]] = fsb.changeValue(arguments[2], arguments[3]);
                     r.changeSections(fs);
                     return new String[]{"Value changed successfully."};
-                }
-                if (arguments[0].equals("remove-relocation")) {
-                    checkArgs(new boolean[0], arguments);
-                    r.removeRelocationData();
-                    return new String[]{"Removed relocation data."};
                 }
                 if (arguments[0].equals("remove-section")) {
                     int sn = (int) (long) (checkArgs(new boolean[]{true}, arguments)[0]);
@@ -190,11 +186,6 @@ public class EFBWrapperBackend implements IBackend {
                     if (ints[i])
                         ints2.add(Long.decode(args[i + 1]));
                 return ints2.toArray(new Long[0]);
-            }
-
-            @Override
-            public boolean fileContainsRelocationData() {
-                return r.fileContainsRelocationData();
             }
         };
     }

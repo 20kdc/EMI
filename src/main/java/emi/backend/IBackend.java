@@ -27,8 +27,5 @@ public interface IBackend {
 
         // All operations prefixed with "ds-" on the command line go here.
         byte[] runDSOperation(String[] arguments);
-
-        // Basically, should the system bring up warnings a lot
-        boolean fileContainsRelocationData();
     }
 }

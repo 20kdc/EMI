@@ -84,15 +84,24 @@ public class ToolInterface {
             public void run() {
                 JFileChooser jfc = new JFileChooser();
                 mainFrame.setVisible(false);
-                if (cmd[0].startsWith("ds-"))
+                boolean sub3 = false;
+                if (cmd[0].startsWith("ds-")) {
                     if (jfc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
                         onClose.run();
                         return;
                     }
+                    sub3 = true;
+                } else if (cmd[0].startsWith("dl-")) {
+                    sub3 = true;
+                }
                 try {
                     String[] args = new String[argBuilders.size() + 1];
                     String[] out = new String[]{"Success."};
-                    args[0] = cmd[0];
+                    if (sub3) {
+                        args[0] = cmd[0].substring(3);
+                    } else {
+                        args[0] = cmd[0];
+                    }
                     System.err.print(cmd[0]);
                     for (int i = 0; i < args.length - 1; i++) {
                         args[i + 1] = argBuilders.get(i).getResult();

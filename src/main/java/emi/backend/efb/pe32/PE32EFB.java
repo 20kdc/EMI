@@ -310,26 +310,4 @@ public class PE32EFB implements IEFB {
         }
         return r;
     }
-
-    @Override
-    public boolean fileContainsRelocationData() {
-        return ((headSection.chars & 1) == 0);
-    }
-
-    @Override
-    public void removeRelocationData() {
-        headSection.chars |= 1;
-        // Check for BASE RELOCATION reference and wipe it.
-        byte[] data = optHeadSection.data();
-        if (data.length >= 48) {
-            byte[] copy = new byte[data.length];
-            for (int i = 0; i < copy.length; i++)
-                copy[i] = data[i];
-            ByteBuffer bb = ByteBuffer.wrap(copy);
-            bb.order(ByteOrder.LITTLE_ENDIAN);
-            bb.putInt(40, 0);
-            bb.putInt(44, 0);
-            optHeadSection = optHeadSection.changedData(copy);
-        }
-    }
 }
