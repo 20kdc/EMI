@@ -35,10 +35,10 @@ public class PrimaryInterface {
     public final String applicationName;
     public final IBackend.IBackendFile target;
 
-    public PrimaryInterface(final IBackend.IBackendFile ibf_uol) {
+    public PrimaryInterface(final IBackend.IBackendFile ibf_uol, String backendName) {
         target = ibf_uol;
 
-        applicationName = "EMI/" + (target.getClass().getName());
+        applicationName = "EMI/" + backendName;
 
         JPanel jp = new JPanel();
         jp.setLayout(new BorderLayout());
@@ -48,22 +48,27 @@ public class PrimaryInterface {
 
         JPanel buttonPanel = new JPanel();
 
-        // write in tools
+        // Start adding tools...
+
+        LinkedList<ITool> tools = new LinkedList<ITool>();
+
+        for (String s : target.runOperation(new String[]{"help"})) {
+            String[] def = s.split(" ");
+            if (!commandBlacklisted(def[0]))
+                tools.add(new BackendCommandTool(def, target));
+        }
+
+        // Convert tools to buttons...
+
         final LinkedList<String> bS = new LinkedList<String>();
         final LinkedList<Runnable> bR = new LinkedList<Runnable>();
 
-        int x = (bS.size() + 1) / 2;
-        buttonPanel.setLayout(new GridLayout(x, 2));
-
-        for (String s : target.runOperation(new String[]{"help"})) {
-            final String[] data = s.split(" ");
-            if (commandBlacklisted(data[0]))
-                continue;
-            bS.add(data[0]);
+        for (final ITool t : tools) {
+            bS.add(t.getDefinition()[0]);
             bR.add(new Runnable() {
                 @Override
                 public void run() {
-                    ToolInterface ti = new ToolInterface(applicationName, new BackendCommandTool(data, target), new Runnable() {
+                    ToolInterface ti = new ToolInterface(applicationName, t, new Runnable() {
                         @Override
                         public void run() {
                             management.compileSectionList();
@@ -75,6 +80,11 @@ public class PrimaryInterface {
                 }
             });
         }
+
+        // All buttons on the panel are now known about
+
+        int x = (bS.size() + 1) / 2;
+        buttonPanel.setLayout(new GridLayout(x, 2));
 
         for (int i = 0; i < bR.size(); i++)
             buttonPanel.add(Main.newButton(bS.get(i), bR.get(i)));
@@ -91,11 +101,11 @@ public class PrimaryInterface {
 
     private boolean commandBlacklisted(String dat) {
         if (dat.equals("list-section-keys"))
-            return false;
+            return true;
         if (dat.equals("get-section-value"))
-            return false;
+            return true;
         if (dat.equals("set-section-value"))
-            return false;
+            return true;
         return false;
     }
 }

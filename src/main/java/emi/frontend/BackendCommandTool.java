@@ -30,12 +30,15 @@ public class BackendCommandTool implements ITool {
     }
 
     @Override
-    public String[] execute(String[] values) {
+    public ITool execute(String[] values) {
         if (values[0].startsWith("dl-")) {
             values[0] = values[0].substring(3);
             JFileChooser jfc = new JFileChooser();
-            if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-                target.runDLOperation(values, FileUtilities.loadFile(jfc.getSelectedFile()));
+            if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                showDialog(target.runDLOperation(values, FileUtilities.loadFile(jfc.getSelectedFile())));
+                return null;
+            }
+            return this;
         }
         if (values[0].startsWith("ds-")) {
             values[0] = values[0].substring(3);
@@ -43,14 +46,23 @@ public class BackendCommandTool implements ITool {
             if (jfc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                 byte[] out = target.runDSOperation(values);
                 FileUtilities.saveFile(jfc.getSelectedFile(), out);
-                return new String[] {
-                        "The data was saved successfully."
-                };
-            } else {
+                showDialog(new String[] {"The data was saved successfully."});
                 return null;
             }
+            return this;
         }
         // do whatever for ds and other.
-        return target.runOperation(values);
+        showDialog(target.runOperation(values));
+        return null;
+    }
+
+    private void showDialog(String[] strings) {
+        String str = "";
+        for (String f : strings) {
+            if (str.length() != 0)
+                str += "\r\n";
+            str += f;
+        }
+        Main.showText("Output", str);
     }
 }

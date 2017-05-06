@@ -20,11 +20,10 @@ import java.util.LinkedList;
  */
 public class ToolInterface {
     final JFrame mainFrame;
-    final Runnable onClose;
     public byte[] data;
     public LinkedList<ArgBuilder> argBuilders;
 
-    public ToolInterface(String appPrefix, final ITool tool, Runnable onDie, final IBackend.IBackendFile ibf) {
+    public ToolInterface(final String appPrefix, final ITool tool, final Runnable onDie, final IBackend.IBackendFile ibf) {
         final String[] cmd = tool.getDefinition();
         mainFrame = new JFrame(appPrefix + "/" + cmd[0]);
 
@@ -102,11 +101,14 @@ public class ToolInterface {
                         System.err.print(" " + args[i + 1]);
                     }
                     System.err.println();
-                    String str = "";
-                    for (String f : tool.execute(args))
-                        str += f + "\r\n";
-                    onClose.run();
-                    Main.showText("Output", str);
+                    ITool next = tool.execute(args);
+                    if (next == null) {
+                        onDie.run();
+                    } else if (next != tool) {
+                        new ToolInterface(appPrefix, next, onDie, ibf).start();
+                    } else {
+                        mainFrame.setVisible(true);
+                    }
                 } catch (Throwable e) {
                     Main.report("failed " + cmd[0], e);
                     mainFrame.setVisible(true);
@@ -122,7 +124,7 @@ public class ToolInterface {
 
             @Override
             public void windowClosing(WindowEvent windowEvent) {
-                onClose.run();
+                onDie.run();
             }
 
             @Override
@@ -146,7 +148,6 @@ public class ToolInterface {
             }
         });
         Main.minimize(mainFrame);
-        onClose = onDie;
     }
 
     public void start() {

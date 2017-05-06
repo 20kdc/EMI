@@ -48,7 +48,7 @@ public class Main {
                             fis.close();
 
                             IBackend.IBackendFile ibf = ib.openFile(data);
-                            new PrimaryInterface(ibf);
+                            new PrimaryInterface(ibf, s);
                             jf.setVisible(false);
                         } catch (Throwable e) {
                             Main.report("While loading file", e);
@@ -86,6 +86,10 @@ public class Main {
     }
 
     public static void showText(String s, String s1) {
+        if (!s1.contains("\r\n")) {
+            JOptionPane.showMessageDialog(null, s1, s, JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
         JFrame report = new JFrame(s);
         report.setSize(320, 240);
         report.setContentPane(new JScrollPane(new JTextArea(s1)));
