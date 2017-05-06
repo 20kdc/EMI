@@ -24,7 +24,7 @@ import java.io.StringWriter;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        final JFrame jf = new JFrame();
+        final JFrame jf = new JFrame("EMI");
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel jp = new JPanel();
@@ -59,7 +59,7 @@ public class Main {
         }
         jf.setContentPane(jp);
 
-        jf.setSize(320, 200);
+        minimize(jf);
         jf.setVisible(true);
     }
 
@@ -87,8 +87,16 @@ public class Main {
 
     public static void showText(String s, String s1) {
         JFrame report = new JFrame(s);
-        report.setSize(320, 200);
+        report.setSize(320, 240);
         report.setContentPane(new JScrollPane(new JTextArea(s1)));
         report.setVisible(true);
+    }
+
+    public static void minimize(JFrame target) {
+        target.setSize(320, 240);
+        target.pack();
+        target.setSize(target.getWidth() * 2, target.getHeight());
+        target.setResizable(false);
+        target.doLayout();
     }
 }

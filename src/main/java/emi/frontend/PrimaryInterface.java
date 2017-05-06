@@ -31,16 +31,17 @@ import java.util.LinkedList;
  */
 public class PrimaryInterface {
     public JFrame mainFrame;
-    public String applicationName;
     public EMISectionManagement management;
-    public IBackend.IBackendFile target;
+    public final String applicationName;
+    public final IBackend.IBackendFile target;
 
-    public PrimaryInterface(IBackend.IBackendFile ibf) {
-        applicationName = "EMI/" + ibf.getClass().getSimpleName();
+    public PrimaryInterface(final IBackend.IBackendFile ibf_uol) {
+        target = ibf_uol;
+
+        applicationName = "EMI/" + (target.getClass().getName());
 
         JPanel jp = new JPanel();
         jp.setLayout(new BorderLayout());
-        target = ibf;
 
         management = new EMISectionManagement(this);
         jp.add(management, BorderLayout.CENTER);
@@ -62,34 +63,13 @@ public class PrimaryInterface {
             bR.add(new Runnable() {
                 @Override
                 public void run() {
-                    ToolInterface ti = new ToolInterface(data, new Runnable() {
+                    ToolInterface ti = new ToolInterface(applicationName, new BackendCommandTool(data, target), new Runnable() {
                         @Override
                         public void run() {
                             management.compileSectionList();
                             mainFrame.setVisible(true);
                         }
                     }, target);
-                    if (data[0].startsWith("dl-")) {
-                        JFileChooser jfc = new JFileChooser();
-                        if (jfc.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
-                            try {
-                                FileInputStream fis = new FileInputStream(jfc.getSelectedFile());
-                                byte[] data2 = new byte[fis.available()];
-                                if (fis.read(data2) != data2.length) {
-                                    fis.close();
-                                    throw new IOException("couldn't read full file");
-                                }
-                                ti.data = data2;
-                                fis.close();
-                            } catch (Throwable e) {
-                                Main.report("While reading data blob", e);
-                                return;
-                            }
-                        } else {
-                            mainFrame.setVisible(true);
-                            return;
-                        }
-                    }
                     mainFrame.setVisible(false);
                     ti.start();
                 }
@@ -104,7 +84,8 @@ public class PrimaryInterface {
         mainFrame = new JFrame(applicationName);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setContentPane(jp);
-        mainFrame.setSize(240, 320);
+        // Can't be minimized sanely, guess and allow resize in case we're wrong
+        mainFrame.setSize(384, 640);
         mainFrame.setVisible(true);
     }
 

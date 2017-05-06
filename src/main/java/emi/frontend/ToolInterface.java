@@ -19,17 +19,16 @@ import java.util.LinkedList;
  * Created on 5/4/17.
  */
 public class ToolInterface {
-    final IBackend.IBackendFile file;
     final JFrame mainFrame;
     final Runnable onClose;
     public byte[] data;
     public LinkedList<ArgBuilder> argBuilders;
 
-    public ToolInterface(final String[] cmd, Runnable onDie, final IBackend.IBackendFile ibf) {
-        file = ibf;
-        mainFrame = new JFrame("EMI " + cmd[0]);
+    public ToolInterface(String appPrefix, final ITool tool, Runnable onDie, final IBackend.IBackendFile ibf) {
+        final String[] cmd = tool.getDefinition();
+        mainFrame = new JFrame(appPrefix + "/" + cmd[0]);
 
-        // Build the dialog.
+        // Build the dialog. Kind of a monolith?
         LinkedList<JPanel> args = new LinkedList<JPanel>();
         argBuilders = new LinkedList<ArgBuilder>();
         int argIndex = 1;
@@ -39,6 +38,8 @@ public class ToolInterface {
             String type = cmd[argIndex++];
             LinkedList<String> words = new LinkedList<String>();
             LinkedList<String> wordsDisplay = new LinkedList<String>();
+
+            // Handle genuine enum/flags
             if (type.equals("enum") || type.equals("flags")) {
                 while (!cmd[argIndex].equals(";")) {
                     String w = cmd[argIndex++];
@@ -47,6 +48,8 @@ public class ToolInterface {
                 }
                 argIndex++;
             }
+
+            // Generate enum/flags when asked to
             if (type.equals("section-idx")) {
                 String[] s = ibf.runOperation(new String[]{"list-sections"});
                 int index = 0;
@@ -55,10 +58,14 @@ public class ToolInterface {
                     wordsDisplay.add(index + ": " + section.split(":")[3]);
                     index++;
                 }
+                type = "enum";
             }
+
+            // type/words/wordsDisplay must be correct at this point for ArgBuilder
+
             arg.setLayout(new GridLayout(1, 1));
             String defaultval = "";
-            if (type.equals("enum") || type.equals("section-idx"))
+            if (type.equals("enum"))
                 defaultval = words.getFirst();
             ArgBuilder res = new ArgBuilder(type, words, wordsDisplay, defaultval, new Runnable() {
                 @Override
@@ -75,6 +82,9 @@ public class ToolInterface {
             args.add(arg);
             argBuilders.add(res);
         }
+
+        // Arguments dealt with, setup the confirm button & such
+
         JPanel iFrame = new JPanel();
         iFrame.setLayout(new GridLayout(args.size() + 1, 1));
         for (JPanel x : args)
@@ -82,44 +92,18 @@ public class ToolInterface {
         iFrame.add(Main.newButton("Confirm", new Runnable() {
             @Override
             public void run() {
-                JFileChooser jfc = new JFileChooser();
                 mainFrame.setVisible(false);
-                boolean sub3 = false;
-                if (cmd[0].startsWith("ds-")) {
-                    if (jfc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
-                        onClose.run();
-                        return;
-                    }
-                    sub3 = true;
-                } else if (cmd[0].startsWith("dl-")) {
-                    sub3 = true;
-                }
                 try {
                     String[] args = new String[argBuilders.size() + 1];
-                    String[] out = new String[]{"Success."};
-                    if (sub3) {
-                        args[0] = cmd[0].substring(3);
-                    } else {
-                        args[0] = cmd[0];
-                    }
                     System.err.print(cmd[0]);
+                    args[0] = cmd[0];
                     for (int i = 0; i < args.length - 1; i++) {
                         args[i + 1] = argBuilders.get(i).getResult();
                         System.err.print(" " + args[i + 1]);
                     }
                     System.err.println();
-                    if (cmd[0].startsWith("ds-")) {
-                        byte[] bt = ibf.runDSOperation(args);
-                        FileOutputStream fos = new FileOutputStream(jfc.getSelectedFile());
-                        fos.write(bt);
-                        fos.close();
-                    } else if (cmd[0].startsWith("dl-")) {
-                        out = ibf.runDLOperation(args, data);
-                    } else {
-                        out = ibf.runOperation(args);
-                    }
                     String str = "";
-                    for (String f : out)
+                    for (String f : tool.execute(args))
                         str += f + "\r\n";
                     onClose.run();
                     Main.showText("Output", str);
@@ -161,7 +145,7 @@ public class ToolInterface {
             public void windowDeactivated(WindowEvent windowEvent) {
             }
         });
-        mainFrame.setSize(320, 240);
+        Main.minimize(mainFrame);
         onClose = onDie;
     }
 

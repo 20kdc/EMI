@@ -14,6 +14,7 @@ import java.util.LinkedList;
 
 /**
  * Responsible for building sub-UI stuff for modification of arguments.
+ * Type can be "num", "str", "enum", "flags".
  * Created on 5/4/17.
  */
 public class ArgBuilder {
@@ -23,10 +24,11 @@ public class ArgBuilder {
     public String jbtValue;
 
     public ArgBuilder(final String type, final LinkedList<String> w, final LinkedList<String> wD, final String oldval, final Runnable hidePar, final Runnable showPar) {
-        if (type.equals("enum") || type.equals("flags") || type.equals("section-idx")) {
+        if (type.equals("enum") || type.equals("flags")) {
             String text = oldval;
             if (!type.equals("flags"))
                 text = wD.get(findWord(w, oldval));
+            jbtValue = oldval;
             piece = jbt = Main.newButton(text, new Runnable() {
                 @Override
                 public void run() {
@@ -34,7 +36,7 @@ public class ArgBuilder {
                     final JFrame jf = new JFrame("Set value...");
                     jf.setSize(320, 240);
                     final JList jp = new JList();
-                    jf.setContentPane(jp);
+                    jf.setContentPane(new JScrollPane(jp));
                     jf.addWindowListener(new WindowListener() {
                         @Override
                         public void windowOpened(WindowEvent windowEvent) {
@@ -80,6 +82,7 @@ public class ArgBuilder {
                     } else {
                         showEnum(jp);
                     }
+                    Main.minimize(jf);
                     jf.setVisible(true);
                 }
 
