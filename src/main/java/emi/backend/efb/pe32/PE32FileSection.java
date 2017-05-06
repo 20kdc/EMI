@@ -7,13 +7,24 @@ package emi.backend.efb.pe32;
 
 import emi.backend.FlagUtils;
 import emi.backend.IEFB;
+import emi.backend.StructUtils;
 
 /**
  * Created on 4/28/17.
  */
 public class PE32FileSection implements IEFB.IVMFileSection, IEFB.IFileSection {
-    public static final String[] cflags1 = new String[]{"r", "w", "x"};
-    public static final long[] cflags2 = new long[]{0x40000000L, 0x80000000L, 0x20000000L};
+
+    public static final String charFlags = "w r x unk28 unk27 unk26 unk25 unk24 unk23 unk22 unk21 unk20 unk19 unk18 unk17 unk16 unk15 unk14 unk13 unk12 unk11 unk10 unk9 unk8 unk7 unk6 unk5 unk4 unk3 unk2 unk1 unk0";
+    // Though this can't be used as an actual struct (some values have to be filled in by EFB), this can be used for reflection-based get/set.
+    public final String[] pe32SectheadVarivalsStruct = StructUtils.validateStruct(new String[] {
+            "size 24",
+            "fst name 8",
+            "u32 relocsO",
+            "u16 relocsN",
+            "u32 linesO",
+            "u16 linesN",
+            "u32 chars " + charFlags
+    });
 
     public byte[] name, data;
     public int relocsO, linesO;
@@ -41,10 +52,10 @@ public class PE32FileSection implements IEFB.IVMFileSection, IEFB.IFileSection {
     @Override
     public String type() {
         String n = "";
-        if ((chars & 0x40000000) != 0)
-            n += "r";
         if ((chars & 0x80000000) != 0)
             n += "w";
+        if ((chars & 0x40000000) != 0)
+            n += "r";
         if ((chars & 0x20000000) != 0)
             n += "x";
         return n;
@@ -63,58 +74,19 @@ public class PE32FileSection implements IEFB.IVMFileSection, IEFB.IFileSection {
 
     @Override
     public String[] describeKeys() {
-        return new String[]{
-                "name string",
-                "relocsO num",
-                "relocsN num",
-                "linesO num",
-                "linesN num",
-                "chars flags r w x",
-                "charsEx num",
-        };
+        return StructUtils.descKeysFromSU(pe32SectheadVarivalsStruct);
     }
 
     @Override
     public String getValue(String key) {
-        if (key.equals("name"))
-            return name();
-        if (key.equals("relocsO"))
-            return Long.toString(relocsO & 0xFFFFFFFFL);
-        if (key.equals("relocsN"))
-            return Long.toString(relocsN & 0xFFFFL);
-        if (key.equals("linesO"))
-            return Long.toString(linesO & 0xFFFFFFFFL);
-        if (key.equals("linesN"))
-            return Long.toString(linesN & 0xFFFFL);
-        if (key.equals("chars"))
-            return FlagUtils.get(cflags1, cflags2, chars);
-        if (key.equals("charsEx"))
-            return Long.toString(chars & 0xFFFFFFFFL);
-        throw new RuntimeException("No such key " + key);
+        return StructUtils.getStruct(pe32SectheadVarivalsStruct, this, key);
     }
 
     @Override
     public IEFB.IFileSection changeValue(String key, String value) {
         PE32FileSection pfs = new PE32FileSection(this);
-        if (key.equals("name")) {
-            byte[] data = new byte[8];
-            for (int i = 0; i < key.length(); i++)
-                data[i] = (byte) key.charAt(i);
-            pfs.name = data;
-        }
-        if (key.equals("relocsO"))
-            pfs.relocsO = (int) (long) Long.decode(value);
-        if (key.equals("relocsN"))
-            pfs.relocsN = (short) (long) Long.decode(value);
-        if (key.equals("linesO"))
-            pfs.linesO = (int) (long) Long.decode(value);
-        if (key.equals("linesN"))
-            pfs.linesN = (short) (long) Long.decode(value);
-        if (key.equals("chars"))
-            pfs.chars = (int) FlagUtils.put(cflags1, cflags2, value, chars & 0xFFFFFFFFL);
-        if (key.equals("charsEx"))
-            pfs.chars = (int) (long) Long.decode(value);
-        throw new RuntimeException("No such key " + key);
+        StructUtils.setStruct(pe32SectheadVarivalsStruct, pfs, key, value);
+        return pfs;
     }
 
     @Override

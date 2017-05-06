@@ -9,31 +9,31 @@ package emi.backend;
  * Created on 4/28/17.
  */
 public class FlagUtils {
-    public static String get(String[] strings, long[] ints, long chars) {
+    public static String get(String[] flags, long chars) {
         String r = "";
-        for (int i = 0; i < ints.length; i++) {
-            if ((chars & ints[i]) != 0) {
+        long top = 1 << (flags.length - 1);
+        for (int i = 0; i < flags.length; i++) {
+            if ((chars & top) != 0) {
                 if (r.equals("")) {
-                    r = strings[i];
+                    r = flags[i];
                 } else {
-                    r += " " + strings[i];
+                    r += " " + flags[i];
                 }
             }
+            chars >>= 1;
         }
         return r;
     }
 
-    public static long put(String[] strings, long[] ints, String value, long chars) {
+    public static long put(String[] flags, String value) {
         String[] r = value.split(" ");
-        for (int i = 0; i < ints.length; i++) {
-            long p = ~ints[i];
-            chars &= p;
-        }
+        long chars = 0;
+        long top = 1 << (flags.length - 1);
         for (String s : r) {
             boolean ok = false;
-            for (int i = 0; i < strings.length; i++) {
-                if (s.equals(strings[i])) {
-                    chars |= ints[i];
+            for (int i = 0; i < flags.length; i++) {
+                if (s.equals(flags[i])) {
+                    chars |= top >> i;
                     ok = true;
                     break;
                 }
