@@ -31,11 +31,11 @@ public class StructUtils {
             } else {
                 if (args.length == 2) {
                     if (args[0].equals("u32"))
-                        r.add(args[1] + " num");
+                        r.add(args[1] + " hexnum");
                     else if (args[0].equals("u16"))
-                        r.add(args[1] + " num");
+                        r.add(args[1] + " hexnum");
                     else if (args[0].equals("u8"))
-                        r.add(args[1] + " num");
+                        r.add(args[1] + " hexnum");
                 } else {
                     if (args[0].equals("u32") || args[0].equals("u16") || args[0].equals("u8")) {
                         // flags!
@@ -65,7 +65,7 @@ public class StructUtils {
                             String[] f = new String[args.length - 2];
                             for (int i = 0; i < f.length; i++)
                                 f[i] = args[i + 2];
-                            value = Long.toString(FlagUtils.put(f, value));
+                            value = LongUtils.longToHexval(FlagUtils.put(f, value));
                         }
                         if (u32) {
                             instClass.getField(args[1]).setInt(instance, Long.decode(value).intValue());
@@ -80,6 +80,7 @@ public class StructUtils {
                     }
                 } else if (args[0].equals("fst")) {
                     if (args[1].equals(key)) {
+                        // This Long.decode is allowed since it's format spec.
                         int space = (int) (long) Long.decode(args[2]);
                         byte[] r1 = value.getBytes("UTF-8");
                         if (r1.length > space)
@@ -110,24 +111,25 @@ public class StructUtils {
                     if (args[1].equals(key)) {
                         String r;
                         if (u32) {
-                            r = Long.toString(instClass.getField(args[1]).getInt(instance) & 0xFFFFFFFFL);
+                            r = LongUtils.longToHexval(LongUtils.usI(instClass.getField(args[1]).getInt(instance)));
                         } else if (u16) {
-                            r = Long.toString(instClass.getField(args[1]).getShort(instance) & 0xFFFFL);
+                            r = LongUtils.longToHexval(LongUtils.usS(instClass.getField(args[1]).getShort(instance)));
                         } else {
-                            r = Long.toString(instClass.getField(args[1]).getByte(instance) & 0xFFL);
+                            r = LongUtils.longToHexval(LongUtils.usB(instClass.getField(args[1]).getByte(instance)));
                         }
                         if (args.length != 2) {
                             // Wring value through translation from long.
                             String[] f = new String[args.length - 2];
                             for (int i = 0; i < f.length; i++)
                                 f[i] = args[i + 2];
-                            r = FlagUtils.get(f, Long.decode(r));
+                            r = FlagUtils.get(f, LongUtils.hexvalToLong(r));
                         }
                         return r;
                     }
                 } else if (args[0].equals("fst")) {
                     if (args[1].equals(key)) {
                         byte[] r = (byte[]) instClass.getField(args[1]).get(instance);
+                        // This Long.decode is allowed since it's format spec.
                         if (r.length != Long.decode(args[2]))
                             throw new RuntimeException("invalid situation!");
                         int nzb = 0;
@@ -167,10 +169,12 @@ public class StructUtils {
                 } else if (args[0].equals("data")) {
                     o.put(Long.decode(args[1]).byteValue());
                 } else if (args[0].equals("skip")) {
+                    // This Long.decode is allowed since it's format spec.
                     int space = (int) (long) Long.decode(args[1]);
                     o.position(o.position() + space);
                 } else if (args[0].equals("fst")) {
                     byte[] r = (byte[]) instClass.getField(args[1]).get(instance);
+                    // This Long.decode is allowed since it's format spec.
                     if (r.length != Long.decode(args[2]))
                         throw new RuntimeException("invalid situation!");
                     o.put(r);
@@ -207,9 +211,11 @@ public class StructUtils {
                     if (o.get() != Long.decode(args[1]).byteValue())
                         throw new RuntimeException("Bad constant byte");
                 } else if (args[0].equals("skip")) {
+                    // This Long.decode is allowed since it's format spec.
                     int space = (int) (long) Long.decode(args[1]);
                     o.position(o.position() + space);
                 } else if (args[0].equals("fst")) {
+                    // This Long.decode is allowed since it's format spec.
                     int l = (int) (long) Long.decode(args[2]);
                     byte[] d = new byte[l];
                     o.get(d);
@@ -243,12 +249,15 @@ public class StructUtils {
             for (String s : struct) {
                 String[] args = s.split(" ");
                 if (args[0].equals("size")) {
+                    // This Long.decode is allowed since it's format spec.
                     sizeExpected = Long.decode(args[1]);
                 } else if (args[0].equals("data")) {
                     size++;
                 } else if (args[0].equals("skip")) {
+                    // This Long.decode is allowed since it's format spec.
                     size += Long.decode(args[1]);
                 } else if (args[0].equals("fst")) {
+                    // This Long.decode is allowed since it's format spec.
                     size += Long.decode(args[2]);
                 } else {
                     boolean u32 = args[0].equals("u32");

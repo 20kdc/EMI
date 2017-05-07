@@ -36,7 +36,8 @@ public class EFBWrapperBackend implements IBackend {
                             // where type can be one of:
                             // enum <args separated by spaces> ;
                             // section-idx
-                            // num
+                            // hexnum (LongUtils stuff)
+                            // num (for indexes)
                             // str
                             // in practice, tools accessible via other means should be blacklisted from GUI
                             // Idea is that this is extendable via decorator backends,
@@ -45,8 +46,8 @@ public class EFBWrapperBackend implements IBackend {
                             // (PE32 resource relocation!!!)
                             "list-sections",
                             "create-section type enum" + cse + " ;",
-                            "set-section-rva section section-idx rva num",
-                            "set-section-len section section-idx len num",
+                            "set-section-rva section section-idx rva hexnum",
+                            "set-section-len section section-idx len hexnum",
                             "list-section-keys section section-idx",
                             "get-section-value section section-idx key str",
                             "set-section-value section section-idx key str value str",
@@ -66,11 +67,11 @@ public class EFBWrapperBackend implements IBackend {
                         if (s instanceof IEFB.IVMFileSection) {
                             // movable: The section can be moved.
                             // fixed: The section cannot be moved.
-                            r[i] = ((IEFB.IVMFileSection) s).getRVA() + " " + ((IEFB.IVMFileSection) s).getLength() + (((IEFB.IVMFileSection) s).canMove() ? " movable" : " fixed");
+                            r[i] = LongUtils.longToHexval(((IEFB.IVMFileSection) s).getRVA()) + " " + LongUtils.longToHexval(((IEFB.IVMFileSection) s).getLength()) + (((IEFB.IVMFileSection) s).canMove() ? " movable" : " fixed");
                         } else {
                             r[i] = "";
                         }
-                        r[i] += ":" + s.data().length + "/" + s.fileDataLength() + ":" + s.type() + ":" + s.name();
+                        r[i] += ":" + LongUtils.longToHexval(s.data().length) + "/" + LongUtils.longToHexval(s.fileDataLength()) + ":" + s.type() + ":" + s.name();
                     }
                     return r;
                 }
@@ -87,18 +88,18 @@ public class EFBWrapperBackend implements IBackend {
                     };
                 }
                 if (arguments[0].equals("set-section-rva")) {
-                    Long[] sn = checkArgs(new boolean[]{true, true}, arguments);
+                    Long[] sn = checkArgs(new boolean[]{true, false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
-                    fs[(int) (long) sn[0]] = ((IEFB.IVMFileSection) fs[(int) (long) sn[0]]).move(sn[1]);
+                    fs[(int) (long) sn[0]] = ((IEFB.IVMFileSection) fs[(int) (long) sn[0]]).move(LongUtils.hexvalToLong(arguments[2]));
                     r.changeSections(fs);
                     return new String[]{
                             "Successfully moved section."
                     };
                 }
                 if (arguments[0].equals("set-section-len")) {
-                    Long[] sn = checkArgs(new boolean[]{true, true}, arguments);
+                    Long[] sn = checkArgs(new boolean[]{true, false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
-                    fs[(int) (long) sn[0]] = ((IEFB.IVMFileSection) fs[(int) (long) sn[0]]).changedLength(sn[1]);
+                    fs[(int) (long) sn[0]] = ((IEFB.IVMFileSection) fs[(int) (long) sn[0]]).changedLength(LongUtils.hexvalToLong(arguments[2]));
                     r.changeSections(fs);
                     return new String[]{
                             "Successfully moved section."

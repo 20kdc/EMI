@@ -14,7 +14,7 @@ import java.util.LinkedList;
 
 /**
  * Responsible for building sub-UI stuff for modification of arguments.
- * Type can be "num", "str", "enum", "flags".
+ * Type can be "hexnum", "num", "str", "enum", "flags".
  * Created on 5/4/17.
  */
 public class ArgBuilder {

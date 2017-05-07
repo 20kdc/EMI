@@ -6,6 +6,7 @@
 package emi.frontend;
 
 import emi.backend.IBackend;
+import emi.backend.LongUtils;
 
 import java.awt.*;
 
@@ -35,7 +36,7 @@ public class EMISectionManagement extends Canvas {
             sections[i] = new EMISMS();
             String[] tokens = r[i].split(":");
             sections[i].text = r[i];
-            sections[i].length = Long.decode(tokens[1].split("/")[1]);
+            sections[i].length = LongUtils.hexvalToLong(tokens[1].split("/")[1]);
             sections[i].view = getColForType(tokens[2]);
             totalLen += sections[i].length;
         }

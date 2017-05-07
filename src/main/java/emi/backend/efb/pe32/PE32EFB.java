@@ -7,6 +7,7 @@ package emi.backend.efb.pe32;
 
 import emi.backend.DataFileSection;
 import emi.backend.IEFB;
+import emi.backend.LongUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -84,11 +85,11 @@ public class PE32EFB implements IEFB {
             fs2.name = name;
             fs2.vSize = bb.getInt();
             fs2.rva = bb.getInt();
-            long rdSize = bb.getInt() & 0xFFFFFFFFL;
-            long rdPtr = bb.getInt() & 0xFFFFFFFFL;
+            long rdSize = LongUtils.usI(bb.getInt());
+            long rdPtr = LongUtils.usI(bb.getInt());
             if (rdPtr != 0) {
                 if (rdPtr < rootPoint)
-                    throw new RuntimeException("Raw data pointer " + rdPtr + " < end of section headers " + rootPoint);
+                    throw new RuntimeException("Raw data pointer " + LongUtils.longToHexval(rdPtr) + " < end of section headers " + LongUtils.longToHexval(rootPoint));
                 for (int j = 0; j < rdSize; j++)
                     map[(int) ((rdPtr + j) - rootPoint)] = true;
                 fs2.data = pullSectionFrom(bb, rdPtr, rdSize);

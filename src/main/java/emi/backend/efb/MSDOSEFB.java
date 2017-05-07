@@ -8,6 +8,7 @@ package emi.backend.efb;
 import emi.backend.DataFileSection;
 import emi.backend.IEFB;
 import emi.backend.ImmobileVMDataFileSection;
+import emi.backend.LongUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -131,7 +132,7 @@ public class MSDOSEFB implements IEFB {
         public String getValue(String key) {
             // All keys are shorts, just use reflection
             try {
-                return Integer.toString(((Short) (MSDOSHeaderFileSection.class.getField(key).get(this))) & 0xFFFF);
+                return LongUtils.longToHexval(LongUtils.usS(MSDOSHeaderFileSection.class.getField(key).getShort(this)));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -142,7 +143,7 @@ public class MSDOSEFB implements IEFB {
         public MSDOSHeaderFileSection changeValue(String key, String value) {
             MSDOSHeaderFileSection fs = new MSDOSHeaderFileSection(this);
             try {
-                fs.getClass().getField(key).set(fs, (short) Integer.parseInt(value));
+                fs.getClass().getField(key).setShort(fs, (short) LongUtils.hexvalToLong(value));
                 return fs;
             } catch (Exception e) {
                 e.printStackTrace();

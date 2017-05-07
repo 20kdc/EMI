@@ -56,6 +56,7 @@ public class ToolInterface {
                 String[] s = ibf.runOperation(new String[]{"list-sections"});
                 int index = 0;
                 for (String section : s) {
+                    // Supposed to be used (section-idx is num, not hexnum)
                     words.add(Integer.toString(index));
                     wordsDisplay.add(index + ": " + section.split(":")[3]);
                     index++;

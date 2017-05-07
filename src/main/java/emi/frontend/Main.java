@@ -82,7 +82,7 @@ public class Main {
         PrintWriter pw = new PrintWriter(sw);
         pw.println(reason);
         e.printStackTrace(pw);
-        showText("system error", sw.toString());
+        showText("system error", sw.toString().replace("\r\n", "\n").replace("\n", "\r\n"));
     }
 
     public static void showText(String s, String s1) {

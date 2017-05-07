@@ -7,18 +7,21 @@ package emi.backend.efb.pe32;
 
 import emi.backend.IBackend;
 import emi.backend.IBackendExtension;
+import emi.backend.LongUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
+ * Adds commands targetted at PE32 files.
  * Created on 5/6/17.
  */
 public class PE32BackendExtension implements IBackendExtension {
     @Override
     public String[] addedCommands() {
         return new String[] {
-                "remove-reloc"
+                "remove-reloc",
+                "move-rsrc-rva",
         };
     }
 
@@ -28,10 +31,10 @@ public class PE32BackendExtension implements IBackendExtension {
             if (arguments.length == 1) {
                 boolean didAnything = false;
                 String chars = ibf.runOperation(new String[] {"get-section-value", "1", "chars"})[0];
-                long charsOldLong = Long.decode(chars);
+                long charsOldLong = LongUtils.hexvalToLong(chars);
                 if ((charsOldLong & 1) == 0)
                     didAnything = true;
-                chars = Long.toString(charsOldLong | 1L);
+                chars = LongUtils.longToHexval(charsOldLong | 1L);
                 ibf.runOperation(new String[] {"set-section-value", "1", "chars", chars});
                 // Check for BASE RELOCATION reference and wipe it.
                 byte[] data = ibf.runDSOperation(new String[] {"get-section", "2"});

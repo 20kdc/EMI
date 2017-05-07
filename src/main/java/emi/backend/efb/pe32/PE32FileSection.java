@@ -7,6 +7,7 @@ package emi.backend.efb.pe32;
 
 import emi.backend.FlagUtils;
 import emi.backend.IEFB;
+import emi.backend.LongUtils;
 import emi.backend.StructUtils;
 
 /**
@@ -111,7 +112,7 @@ public class PE32FileSection implements IEFB.IVMFileSection, IEFB.IFileSection {
 
     @Override
     public long getRVA() {
-        return rva;
+        return LongUtils.usI(rva);
     }
 
     @Override
@@ -130,7 +131,7 @@ public class PE32FileSection implements IEFB.IVMFileSection, IEFB.IFileSection {
     public long getLength() {
         if (vSize < data.length)
             return data.length;
-        return vSize;
+        return LongUtils.usI(vSize);
     }
 
     @Override
