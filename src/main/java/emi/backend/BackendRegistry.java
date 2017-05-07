@@ -8,6 +8,7 @@ package emi.backend;
 import emi.backend.efb.MSDOSEFB;
 import emi.backend.efb.pe32.PE32BackendExtension;
 import emi.backend.efb.pe32.PE32EFB;
+import emi.backend.intutil.IBackendExtension;
 
 /**
  * Contains the backend singletons.

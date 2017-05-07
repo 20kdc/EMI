@@ -6,7 +6,7 @@
 package emi.backend.efb.pe32;
 
 import emi.backend.IBackend;
-import emi.backend.IBackendExtension;
+import emi.backend.intutil.IBackendExtension;
 import emi.backend.LongUtils;
 
 import java.nio.ByteBuffer;
@@ -21,7 +21,7 @@ public class PE32BackendExtension implements IBackendExtension {
     public String[] addedCommands() {
         return new String[] {
                 "remove-reloc",
-                "move-rsrc-rva",
+                //"move-rsrc-rva",
         };
     }
 

@@ -3,7 +3,7 @@
  * No warranty is provided, implied or otherwise.
  */
 
-package emi.backend;
+package emi.backend.intutil;
 
 import java.io.IOException;
 
@@ -15,7 +15,7 @@ import java.io.IOException;
 public interface IEFB {
     // This is meant to be immutable.
     // It can be internally mutable until the object leaves the API.
-    public interface IFileSection {
+    interface IFileSection {
         // "" (Waste data), "header", "data"
         // and 6 combinations of r, w and x.
         String type();
@@ -43,7 +43,7 @@ public interface IEFB {
         IFileSection changedData(byte[] data);
     }
 
-    public interface IVMFileSection {
+    interface IVMFileSection {
         // Note: If there is no such thing as an RVA in the format, this can actually be VA.
         // Get the RVA of this section.
         long getRVA();

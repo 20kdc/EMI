@@ -5,10 +5,9 @@
 
 package emi.backend.efb.pe32;
 
-import emi.backend.FlagUtils;
-import emi.backend.IEFB;
+import emi.backend.intutil.IEFB;
 import emi.backend.LongUtils;
-import emi.backend.StructUtils;
+import emi.backend.intutil.StructUtils;
 
 /**
  * Created on 4/28/17.

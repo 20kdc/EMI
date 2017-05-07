@@ -3,9 +3,10 @@
  * No warranty is provided, implied or otherwise.
  */
 
-package emi.backend;
+package emi.backend.intutil;
 
 /**
+ * Stuff for the handling of flags.
  * Created on 4/28/17.
  */
 public class FlagUtils {

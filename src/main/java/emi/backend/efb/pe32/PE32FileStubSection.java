@@ -5,16 +5,16 @@
 
 package emi.backend.efb.pe32;
 
-import emi.backend.DataFileSection;
-import emi.backend.IEFB;
+import emi.backend.intutil.IEFB;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
+ * The DOS stub at the start of a PE32 file.
  * Created on 4/29/17.
  */
-public class PE32FileStubSection implements IEFB.IFileSection {
+class PE32FileStubSection implements IEFB.IFileSection {
     public byte[] data;
 
     public PE32FileStubSection() {

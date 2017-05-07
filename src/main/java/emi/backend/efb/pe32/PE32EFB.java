@@ -5,8 +5,8 @@
 
 package emi.backend.efb.pe32;
 
-import emi.backend.DataFileSection;
-import emi.backend.IEFB;
+import emi.backend.intutil.DataFileSection;
+import emi.backend.intutil.IEFB;
 import emi.backend.LongUtils;
 
 import java.io.IOException;

@@ -3,7 +3,9 @@
  * No warranty is provided, implied or otherwise.
  */
 
-package emi.backend;
+package emi.backend.intutil;
+
+import emi.backend.IBackend;
 
 /**
  * Allows adding purpose-specific tools to backends.

@@ -5,6 +5,8 @@
 
 package emi.backend;
 
+import emi.backend.intutil.IBackendExtension;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,7 +15,7 @@ import java.util.LinkedList;
  * Extends a basic backend (like EFBWrapperBackend in the general case) with additional macro-like operations.
  * Created on 5/6/17.
  */
-public class ExtenderBackend implements IBackend {
+class ExtenderBackend implements IBackend {
     public final IBackend root;
     public final IBackendExtension[] extensions;
     public ExtenderBackend(IBackend r, IBackendExtension[] ext) {

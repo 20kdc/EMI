@@ -1,0 +1,15 @@
+Java's permission scheme might not have a clause for this, but:
+DO NOT use stuff in this section in Frontend! I mean it!
+Where possible, I've made classes package-local to backend.
+Where that's not possible but the classes need to be non-public-API they go here.
+
+Hence, full list of exports should be:
+
+IBackend & IBackendFile (actual interface)
+BackendRegistry (needed to access backend)
+FileUtilities, LongUtils (Utility classes)
+
+--------------------------------------
+
+Also note that since StructUtils needs to get at everything, relevant classes are public.
+This doesn't mean you get to go around messing with IEFB.

@@ -5,6 +5,8 @@
 
 package emi.backend;
 
+import emi.backend.intutil.IEFB;
+
 import java.io.IOException;
 import java.util.LinkedList;
 
@@ -14,7 +16,7 @@ import java.util.LinkedList;
  * Essentially, this is the interface to the whole system.
  * Created on 4/28/17.
  */
-public class EFBWrapperBackend implements IBackend {
+class EFBWrapperBackend implements IBackend {
     public final IEFB b;
 
     public EFBWrapperBackend(IEFB efb) {

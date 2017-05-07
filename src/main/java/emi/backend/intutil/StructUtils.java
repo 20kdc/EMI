@@ -3,9 +3,10 @@
  * No warranty is provided, implied or otherwise.
  */
 
-package emi.backend;
+package emi.backend.intutil;
 
-import emi.backend.efb.pe32.PE32FileOptHeadSection;
+import emi.backend.LongUtils;
+import emi.backend.intutil.FlagUtils;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -68,13 +69,13 @@ public class StructUtils {
                             value = LongUtils.longToHexval(FlagUtils.put(f, value));
                         }
                         if (u32) {
-                            instClass.getField(args[1]).setInt(instance, Long.decode(value).intValue());
+                            instClass.getField(args[1]).setInt(instance, (int) LongUtils.hexvalToLong(value));
                             return;
                         } else if (u16) {
-                            instClass.getField(args[1]).setShort(instance, Long.decode(value).shortValue());
+                            instClass.getField(args[1]).setShort(instance, (short) LongUtils.hexvalToLong(value));
                             return;
                         } else {
-                            instClass.getField(args[1]).setByte(instance, Long.decode(value).byteValue());
+                            instClass.getField(args[1]).setByte(instance, (byte) LongUtils.hexvalToLong(value));
                             return;
                         }
                     }

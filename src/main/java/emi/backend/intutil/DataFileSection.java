@@ -3,7 +3,7 @@
  * No warranty is provided, implied or otherwise.
  */
 
-package emi.backend;
+package emi.backend.intutil;
 
 /**
  * Blob of data.

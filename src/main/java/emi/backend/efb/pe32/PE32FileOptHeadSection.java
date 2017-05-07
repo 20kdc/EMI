@@ -5,8 +5,8 @@
 
 package emi.backend.efb.pe32;
 
-import emi.backend.IEFB;
-import emi.backend.StructUtils;
+import emi.backend.intutil.IEFB;
+import emi.backend.intutil.StructUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -8,7 +8,7 @@ package emi.backend;
 import java.io.*;
 import java.util.LinkedList;
 
-public class Main {
+class Main {
     public static void main(String[] args) throws Exception {
         IBackend r = BackendRegistry.get(args[0]);
         IBackend.IBackendFile ibf;

@@ -5,13 +5,13 @@
 
 package emi.backend.efb.pe32;
 
-import emi.backend.IEFB;
+import emi.backend.intutil.IEFB;
 
 /**
  * useless section to fill up space & assist filesize accounting
  * Created on 4/29/17.
  */
-public class PE32FileSectionHeadersSection implements IEFB.IFileSection {
+class PE32FileSectionHeadersSection implements IEFB.IFileSection {
     public int ds;
 
     public PE32FileSectionHeadersSection(int sections) {
