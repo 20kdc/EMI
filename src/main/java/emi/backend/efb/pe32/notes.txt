@@ -1,3 +1,29 @@
 Firstly, if the Virtual Size is under the raw data size, the actual size is the raw data size.
 Secondly, if the raw data pointer is 0, then it's 100% BSS - the raw data size might well be used even in this case, oddly.
 Thirdly, I have so far observed no EXE with the RVA sections out of order.
+
+Image Size notes:
+OS(Sv) has an ImageSize of 115000 and a header size of 400.
+This, of course, looks like BS in File Address Space, but here's the explainations:
+Header size is everything added up to the last waste data block before the first section.
+Image size is actually in Virtual Space, and is essentially the highest RVA rounded up for alignment using Section Alignment.
+
+Roadmap here is to:
+1. Implement File Address constraints as automatic waste section insertion/extension.
+2. Implement RVA constraints as automatic alignment of new sections and complaining if a section inserted isn't up to snuff.
+
+Some section characteristics of note:
+
+note that section alignment flags are as follows:
+ 00300000:  4 bytes.
+ 00500000: 16 bytes.
+ 00700000: 64 bytes.
+
+I notice a distinct relation between this and 1 << x - 1. Specifically 3 -> (1 << 2), 5 -> (1 << 4), 7 -> (1 << 6)...
+
+ meanwhile for section types
+ 00000020: code
+ 00000040: idat
+ 00000080: uidat
+
+ Yes, there can be combinations.
