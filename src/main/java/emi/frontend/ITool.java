@@ -12,6 +12,8 @@ package emi.frontend;
 public interface ITool {
     // name & args, in the same format as described in EFBWrapperBackend, with the split done early
     String[] getDefinition();
+    // null, in most cases - otherwise, assumed-valid default values.
+    String[] getDefaultVals();
     // Note that values includes the command name in definition, but doesn't know about dl-/ds- stuff.
     // Throwing exceptions is fine, and shows error. Returning null indicates success.
     // Returning the ITool object itself indicates cancel (put dialog back up and wait for further instruction)

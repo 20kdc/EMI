@@ -30,6 +30,11 @@ public class BackendCommandTool implements ITool {
     }
 
     @Override
+    public String[] getDefaultVals() {
+        return null;
+    }
+
+    @Override
     public ITool execute(String[] values) {
         if (values[0].startsWith("dl-")) {
             values[0] = values[0].substring(3);

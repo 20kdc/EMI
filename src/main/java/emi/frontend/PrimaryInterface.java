@@ -52,6 +52,8 @@ public class PrimaryInterface {
 
         LinkedList<ITool> tools = new LinkedList<ITool>();
 
+        tools.add(new EditSectionTool(target));
+
         for (String s : target.runOperation(new String[]{"help"})) {
             String[] def = s.split(" ");
             if (!commandBlacklisted(def[0]))

@@ -23,8 +23,8 @@ public interface IEFB {
         String name();
 
         // A machine-readable description of section header stuff.
-        // First word of each is name, second is type "string", "num", or "flags".
-        // (If "flags", the remaining words are the available flags.)
+        // First word of each is name, second is type "string", "num", "enum", or "flags".
+        // (If "flags", the remaining words are the available flags - if "enum", they are the options available.)
         // Notably, the keys are in the order of values given to createSectionData.
         // Passable to createSection.
         String[] describeKeys();

@@ -30,6 +30,9 @@ public class ToolInterface {
         // Build the dialog. Kind of a monolith?
         LinkedList<JPanel> args = new LinkedList<JPanel>();
         argBuilders = new LinkedList<ArgBuilder>();
+
+        String[] defvalset = tool.getDefaultVals();
+
         int argIndex = 1;
         while (argIndex < cmd.length) {
             JPanel arg = new JPanel();
@@ -66,6 +69,8 @@ public class ToolInterface {
             String defaultval = "";
             if (type.equals("enum"))
                 defaultval = words.getFirst();
+            if (defvalset != null)
+                defaultval = defvalset[args.size()];
             ArgBuilder res = new ArgBuilder(type, words, wordsDisplay, defaultval, new Runnable() {
                 @Override
                 public void run() {

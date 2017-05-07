@@ -52,10 +52,11 @@ public class PE32FileSection implements IEFB.IVMFileSection, IEFB.IFileSection {
     @Override
     public String type() {
         String n = "";
-        if ((chars & 0x80000000) != 0)
-            n += "w";
+        // Order should remain "rwx"!!!
         if ((chars & 0x40000000) != 0)
             n += "r";
+        if ((chars & 0x80000000) != 0)
+            n += "w";
         if ((chars & 0x20000000) != 0)
             n += "x";
         return n;
