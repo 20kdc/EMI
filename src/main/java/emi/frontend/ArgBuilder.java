@@ -83,7 +83,7 @@ public class ArgBuilder {
                         showEnum(jp);
                     }
                     Main.minimize(jf);
-                    jf.setVisible(true);
+                    Main.visible(jf);
                 }
 
                 // This fills the contents of the frame.

@@ -66,4 +66,9 @@ public class EditSpecificSectionTool implements ITool {
             });
         return null;
     }
+
+    @Override
+    public boolean instantResponse() {
+        return true;
+    }
 }

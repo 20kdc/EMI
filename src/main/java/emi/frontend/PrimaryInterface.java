@@ -71,14 +71,24 @@ public class PrimaryInterface {
             bR.add(new Runnable() {
                 @Override
                 public void run() {
-                    ToolInterface ti = new ToolInterface(applicationName, t, new Runnable() {
-                        @Override
-                        public void run() {
-                            management.compileSectionList();
-                            mainFrame.setVisible(true);
-                        }
-                    }, target);
-                    mainFrame.setVisible(false);
+                    ToolInterface ti = new ToolInterface(applicationName, t, target);
+                    if (ti.mustHideMainwin) {
+                        ti.onDie = new Runnable() {
+                            @Override
+                            public void run() {
+                                management.compileSectionList();
+                                Main.visible(mainFrame);
+                            }
+                        };
+                        mainFrame.setVisible(false);
+                    } else {
+                        ti.onDie = new Runnable() {
+                            @Override
+                            public void run() {
+                                management.compileSectionList();
+                            }
+                        };
+                    }
                     ti.start();
                 }
             });
@@ -99,7 +109,7 @@ public class PrimaryInterface {
         mainFrame.setContentPane(jp);
         // Can't be minimized sanely, guess and allow resize in case we're wrong
         mainFrame.setSize(384, 640);
-        mainFrame.setVisible(true);
+        Main.visible(mainFrame);
     }
 
     private boolean commandBlacklisted(String dat) {

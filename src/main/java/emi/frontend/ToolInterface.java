@@ -19,17 +19,46 @@ import java.util.LinkedList;
  * Created on 5/4/17.
  */
 public class ToolInterface {
-    final JFrame mainFrame;
-    public byte[] data;
-    public LinkedList<ArgBuilder> argBuilders;
-
-    public ToolInterface(final String appPrefix, final ITool tool, final Runnable onDie, final IBackend.IBackendFile ibf) {
+    final Runnable startBehavior;
+    public final boolean mustHideMainwin;
+    public Runnable onDie = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
+    public ToolInterface(final String appPrefix, final ITool tool, final IBackend.IBackendFile ibf) {
         final String[] cmd = tool.getDefinition();
-        mainFrame = new JFrame(appPrefix + "/" + cmd[0]);
+        if (cmd.length == 1) {
+            // There are no parameters, so go with a special-case.
+            mustHideMainwin = !tool.instantResponse();
+            startBehavior = new Runnable() {
+                @Override
+                public void run() {
+                    executeTool(appPrefix, onDie, tool, new String[] {cmd[0]}, ibf);
+                }
+            };
+            return;
+        }
+        mustHideMainwin = true;
+
+        // Essentially everything is in this one mega-routine.
+        // Not great, but then again, it does delegate off to classes where it ought to.
+        // How to improve...
+        // EMI is meant to be a *cleaner* rewrite of PEONS, not a *worse* rewrite.
+        // I guess if argument parsing and compiling was in one class, and the "IArg" classes had the UI building stuff?
+        // That would solve two problems at once, and the result would be similar to PrimaryInterface in terms of complexity.
+
+        final JFrame mainFrame = new JFrame(appPrefix + "/" + cmd[0]);
+        startBehavior = new Runnable() {
+            @Override
+            public void run() {
+                Main.visible(mainFrame);
+            }
+        };
 
         // Build the dialog. Kind of a monolith?
         LinkedList<JPanel> args = new LinkedList<JPanel>();
-        argBuilders = new LinkedList<ArgBuilder>();
+        final LinkedList<ArgBuilder> argBuilders = new LinkedList<ArgBuilder>();
 
         String[] defvalset = tool.getDefaultVals();
 
@@ -80,7 +109,7 @@ public class ToolInterface {
             }, new Runnable() {
                 @Override
                 public void run() {
-                    mainFrame.setVisible(true);
+                    Main.visible(mainFrame);
                 }
             });
             arg.add(res.piece);
@@ -98,27 +127,16 @@ public class ToolInterface {
             @Override
             public void run() {
                 mainFrame.setVisible(false);
-                try {
-                    String[] args = new String[argBuilders.size() + 1];
-                    System.err.print(cmd[0]);
-                    args[0] = cmd[0];
-                    for (int i = 0; i < args.length - 1; i++) {
-                        args[i + 1] = argBuilders.get(i).getResult();
-                        System.err.print(" " + args[i + 1]);
+                String[] args = new String[argBuilders.size() + 1];
+                args[0] = cmd[0];
+                for (int i = 0; i < args.length - 1; i++)
+                    args[i + 1] = argBuilders.get(i).getResult();
+                executeTool(appPrefix, new Runnable() {
+                    @Override
+                    public void run() {
+                        Main.visible(mainFrame);
                     }
-                    System.err.println();
-                    ITool next = tool.execute(args);
-                    if (next == null) {
-                        onDie.run();
-                    } else if (next != tool) {
-                        new ToolInterface(appPrefix, next, onDie, ibf).start();
-                    } else {
-                        mainFrame.setVisible(true);
-                    }
-                } catch (Throwable e) {
-                    Main.report("failed " + cmd[0], e);
-                    mainFrame.setVisible(true);
-                }
+                }, tool, args, ibf);
             }
         }));
         mainFrame.setContentPane(iFrame);
@@ -156,7 +174,27 @@ public class ToolInterface {
         Main.minimize(mainFrame);
     }
 
+    private void executeTool(String appPrefix, Runnable reshow, ITool tool, String[] args, IBackend.IBackendFile ibf) {
+        try {
+            ITool next = tool.execute(args);
+            if (next == null) {
+                onDie.run();
+            } else if (next != tool) {
+                if (!mustHideMainwin)
+                    throw new RuntimeException("Invalid tool configuration. (mustHideMainwin false but tool recursed)");
+                ToolInterface ti = new ToolInterface(appPrefix, next, ibf);
+                ti.onDie = onDie;
+                ti.start();
+            } else {
+                reshow.run();
+            }
+        } catch (Throwable e) {
+            Main.report("failed " + args[0], e);
+            reshow.run();
+        }
+    }
+
     public void start() {
-        mainFrame.setVisible(true);
+        startBehavior.run();
     }
 }

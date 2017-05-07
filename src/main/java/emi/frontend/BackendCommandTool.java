@@ -61,6 +61,11 @@ public class BackendCommandTool implements ITool {
         return null;
     }
 
+    @Override
+    public boolean instantResponse() {
+        return !(definition[0].startsWith("dl-") || definition[0].startsWith("ds-"));
+    }
+
     private void showDialog(String[] strings) {
         String str = "";
         for (String f : strings) {

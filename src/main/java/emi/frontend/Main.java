@@ -7,6 +7,7 @@ package emi.frontend;
 
 import emi.backend.BackendRegistry;
 import emi.backend.IBackend;
+import emi.backend.LoggingBackendFile;
 
 import javax.swing.*;
 import javax.swing.text.DefaultStyledDocument;
@@ -32,7 +33,7 @@ public class Main {
         String[] backends = BackendRegistry.backends;
         jp.setLayout(new GridLayout(backends.length, 2));
         for (final String s : backends) {
-            jp.add(newButton(s, new Runnable() {
+            jp.add(newButton("load " + s, new Runnable() {
                 @Override
                 public void run() {
                     JFileChooser jfc = new JFileChooser();
@@ -47,7 +48,7 @@ public class Main {
                             }
                             fis.close();
 
-                            IBackend.IBackendFile ibf = ib.openFile(data);
+                            IBackend.IBackendFile ibf = new LoggingBackendFile(ib.openFile(data));
                             new PrimaryInterface(ibf, s);
                             jf.setVisible(false);
                         } catch (Throwable e) {
@@ -56,11 +57,24 @@ public class Main {
                     }
                 }
             }));
+            jp.add(newButton("new " + s, new Runnable() {
+                @Override
+                public void run() {
+                    IBackend ib = BackendRegistry.get(s);
+                    try {
+                        IBackend.IBackendFile ibf = new LoggingBackendFile(ib.createFile());
+                        new PrimaryInterface(ibf, s);
+                        jf.setVisible(false);
+                    } catch (Throwable e) {
+                        Main.report("While creating file", e);
+                    }
+                }
+            }));
         }
         jf.setContentPane(jp);
 
         minimize(jf);
-        jf.setVisible(true);
+        Main.visible(jf);
     }
 
     public static JButton newButton(String s, final Runnable runnable) {
@@ -93,7 +107,7 @@ public class Main {
         JFrame report = new JFrame(s);
         report.setSize(320, 240);
         report.setContentPane(new JScrollPane(new JTextArea(s1)));
-        report.setVisible(true);
+        Main.visible(report);
     }
 
     public static void minimize(final JFrame target) {
@@ -124,6 +138,19 @@ public class Main {
                 target.invalidate();
                 target.doLayout();
                 target.layout();
+            }
+        });
+        t.setRepeats(false);
+        t.start();
+    }
+
+    // Make a frame visible and make sure it's focused 500ms later (Accidental click-through causes the WM to show the window behind, and this can actually take >100ms to go through)
+    public static void visible(final JFrame mainFrame) {
+        mainFrame.setVisible(true);
+        final Timer t = new Timer(500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                mainFrame.requestFocus();
             }
         });
         t.setRepeats(false);

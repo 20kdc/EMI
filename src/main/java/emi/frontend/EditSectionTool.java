@@ -31,4 +31,9 @@ public class EditSectionTool implements ITool {
     public ITool execute(String[] values) {
         return new EditSpecificSectionTool(target, Integer.parseInt(values[1]));
     }
+
+    @Override
+    public boolean instantResponse() {
+        return false;
+    }
 }

@@ -19,4 +19,10 @@ public interface ITool {
     // Returning the ITool object itself indicates cancel (put dialog back up and wait for further instruction)
     // Returning a new ITool object indicates that the mantle is to be passed to a new tool.
     ITool execute(String[] values);
+
+    // If this is true, the tool MUST NOT invoke any other tool, MUST NOT open any dialogs, etc.
+    // The entire tool, once provided with arguments, must execute and be done with in a single event without returning to AWT.
+    // Furthermore, the tool must not return another tool (except itself, but this case is treated as if it returned null)
+    // Default to "false".
+    boolean instantResponse();
 }
