@@ -96,11 +96,37 @@ public class Main {
         report.setVisible(true);
     }
 
-    public static void minimize(JFrame target) {
+    public static void minimize(final JFrame target) {
         target.setSize(320, 240);
         target.pack();
+
+        // This sequence works most of the time, but other times it doesn't.
+        // Set an AWT timer so that if for some reason the flipping framework decides "actually how about we don't layout your component today", it's told to shut up.
         target.setSize(target.getWidth() * 2, target.getHeight());
         target.setResizable(false);
         target.doLayout();
+        target.invalidate();
+        target.layout();
+        final Timer t = new Timer(100, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                // Spam relayout commands. This ALWAYS resolves correctly but can lead to too-large results.
+                // Filed under: "a price one is willing to pay to stop the system getting even worse results", and "fuck swing layouts".
+                target.invalidate();
+                target.doLayout();
+                target.layout();
+                int oldW = target.getWidth(), oldH = target.getHeight();
+                target.setSize(1, 1);
+                target.invalidate();
+                target.doLayout();
+                target.layout();
+                target.setSize(oldW, oldH);
+                target.invalidate();
+                target.doLayout();
+                target.layout();
+            }
+        });
+        t.setRepeats(false);
+        t.start();
     }
 }

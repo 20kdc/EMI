@@ -43,6 +43,7 @@ public class PrimaryInterface {
         JPanel jp = new JPanel();
         jp.setLayout(new BorderLayout());
 
+        jp.add(new JLabel("<html><code>RVA LEN (fixed/movable):physLen/dataLen:type:name</code><br/><i>Sections typically in file address order.</i></html>"), BorderLayout.NORTH);
         management = new EMISectionManagement(this);
         jp.add(management, BorderLayout.CENTER);
 
