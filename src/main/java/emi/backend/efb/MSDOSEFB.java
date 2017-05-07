@@ -178,8 +178,10 @@ public class MSDOSEFB implements IEFB {
     public void loadFile(byte[] dat) throws IOException {
         ByteBuffer b = ByteBuffer.wrap(dat);
         b.order(ByteOrder.LITTLE_ENDIAN);
-        if (b.getShort() != (short) 0x5A4D)
-            throw new IOException("Bad signature.");
+        short magic = b.getShort();
+        if (magic != (short) 0x5A4D)
+            if (magic != (short) 0x4D5A) // Seriously?
+                throw new IOException("Bad signature.");
         int usedBytes = b.getShort() & 0xFFFF;
         int blocks = b.getShort() & 0xFFFF;
         header = new MSDOSHeaderFileSection(b);
