@@ -5,7 +5,9 @@
 
 package emi.backend.efb.pe32;
 
+import emi.backend.intutil.AlignmentUtil;
 import emi.backend.intutil.DataFileSection;
+import emi.backend.intutil.IAlignmentPredictate;
 import emi.backend.intutil.IEFB;
 import emi.backend.LongUtils;
 
@@ -192,8 +194,8 @@ public class PE32EFB implements IEFB {
                     maxRVA = point;
             }
         }
-        s.rva = (int) maxRVA;
-        s.vSize = 0x1000;
+        s.rva = (int) AlignmentUtil.roundUp(maxRVA, optHeadSection.sectionAlignment);
+        s.vSize = optHeadSection.sectionAlignment;
         return s;
     }
 
@@ -209,7 +211,7 @@ public class PE32EFB implements IEFB {
         PE32FileHeadSection hs = null;
         PE32FileOptHeadSection ohs = null;
 
-        fs.clear();
+        LinkedList<IFileSection> nfs = new LinkedList<IFileSection>();
         int sCount = 0;
         for (IFileSection ifs : file) {
             if (ifs instanceof PE32FileStubSection)
@@ -219,9 +221,9 @@ public class PE32EFB implements IEFB {
             if (ifs instanceof PE32FileOptHeadSection)
                 ohs = (PE32FileOptHeadSection) ifs;
             if (ifs instanceof DataFileSection)
-                fs.add(ifs);
+                nfs.add(ifs);
             if (ifs instanceof PE32FileSection) {
-                fs.add(ifs);
+                nfs.add(ifs);
                 sCount++;
             }
         }
@@ -232,13 +234,51 @@ public class PE32EFB implements IEFB {
         if (phs == null)
             throw new RuntimeException("PE32 needs Stub");
         secHeadSection = new PE32FileSectionHeadersSection(sCount);
-        fs.addFirst(secHeadSection);
+        nfs.addFirst(secHeadSection);
         optHeadSection = ohs;
-        fs.addFirst(optHeadSection);
+        nfs.addFirst(optHeadSection);
         headSection = hs;
-        fs.addFirst(headSection);
+        nfs.addFirst(headSection);
         preHeadSection = phs;
-        fs.addFirst(preHeadSection);
+        nfs.addFirst(preHeadSection);
+        // Moved into an external class so that this can avoid being similar to the PEFile of old (see: old myths)
+        fs = AlignmentUtil.ensureAlignment(nfs, new IAlignmentPredictate() {
+            @Override
+            public long mustAlignRVA(IFileSection fs) {
+                if (fs instanceof PE32FileSection)
+                    return optHeadSection.sectionAlignment;
+                return 0;
+            }
+            @Override
+            public long mustAlignPhys(IFileSection fs) {
+                // Note that if a section doesn't have any data, it's exempt from file alignment until it gets data.
+                // This prevents moved about BSS sections from acting weird.
+                if (fs instanceof PE32FileSection)
+                    if (((PE32FileSection) fs).data.length > 0)
+                        return optHeadSection.fileAlignment;
+                return 0;
+            }
+
+            @Override
+            public IFileSection generatePhysicalPadding(long amount) {
+                return makeWaste(new byte[(int) amount]);
+            }
+        }, optHeadSection.fileAlignment, optHeadSection.sectionAlignment);
+        // Calculate header and image size.
+        long headerSize = 0;
+        long imageSize = 0;
+        for (IFileSection ifs : nfs) {
+            if (ifs instanceof PE32FileSection) {
+                long bound = ((PE32FileSection) ifs).rva + ((PE32FileSection) ifs).vSize;
+                if (bound > imageSize)
+                    imageSize = bound;
+            } else {
+                headerSize += ifs.fileDataLength();
+            }
+        }
+        imageSize = AlignmentUtil.roundUp(imageSize, optHeadSection.sectionAlignment);
+        optHeadSection.PVheaderSize = (int) headerSize;
+        optHeadSection.PVimageSize = (int) imageSize;
     }
 
     @Override

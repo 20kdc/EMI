@@ -10,7 +10,9 @@ Image size is actually in Virtual Space, and is essentially the highest RVA roun
 
 Roadmap here is to:
 1. Implement File Address constraints as automatic waste section insertion/extension.
+ DONE! (Though only as insertion, not extension)
 2. Implement RVA constraints as automatic alignment of new sections and complaining if a section inserted isn't up to snuff.
+ DONE!
 
 Some section characteristics of note:
 

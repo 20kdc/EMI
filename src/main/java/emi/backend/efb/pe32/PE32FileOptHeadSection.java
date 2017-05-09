@@ -24,7 +24,7 @@ public class PE32FileOptHeadSection implements IEFB.IFileSection {
     public int sectionAlignment, fileAlignment;
     public short majorOSVer, minorOSVer, majorImgVer, minorImgVer;
     public short majorSSVer = 4, minorSSVer;
-    public int w32Ver, imageSize, headerSize, checksum;
+    public int w32Ver, PVimageSize, PVheaderSize, checksum;
     public short subsystem = 3, dllChars;
     public int stackReserve = 0x200000, stackCommit = 0x1000, heapReserve = 0x100000, heapCommit = 0x1000;
     public int loaderFlags;
@@ -53,8 +53,37 @@ public class PE32FileOptHeadSection implements IEFB.IFileSection {
             "u16 majorSSVer",
             "u16 minorSSVer",
             "u32 w32Ver",
-            "u32 imageSize", // hmmm
-            "u32 headerSize", // hmmm
+            "u32 PVimageSize", // <private>
+            "u32 PVheaderSize", // <private>
+            "u32 checksum",
+            "u16 subsystem",
+            "u16 dllChars",
+            "u32 stackReserve",
+            "u32 stackCommit",
+            "u32 heapReserve",
+            "u32 heapCommit",
+            "u32 loaderFlags"
+    });
+    public static String[] publicOptHeadStruct = StructUtils.validateStruct(new String[]{
+            "size 0x52",
+            "u8 majorLinker",
+            "u8 minorLinker",
+            "u32 sizeCode",
+            "u32 sizeInitData",
+            "u32 sizeUninitData",
+            "u32 entryPoint",
+            "u32 baseCode",
+            "u32 baseData",
+            "u32 imageBase",
+            "u32 sectionAlignment",
+            "u32 fileAlignment",
+            "u16 majorOSVer",
+            "u16 minorOSVer",
+            "u16 majorImgVer",
+            "u16 minorImgVer",
+            "u16 majorSSVer",
+            "u16 minorSSVer",
+            "u32 w32Ver",
             "u32 checksum", // hmmmm
             "u16 subsystem",
             "u16 dllChars",
@@ -64,7 +93,6 @@ public class PE32FileOptHeadSection implements IEFB.IFileSection {
             "u32 heapCommit",
             "u32 loaderFlags"
     });
-
     public PE32FileOptHeadSection() {
 
     }
@@ -97,18 +125,18 @@ public class PE32FileOptHeadSection implements IEFB.IFileSection {
 
     @Override
     public String[] describeKeys() {
-        return StructUtils.descKeysFromSU(optHeadStruct);
+        return StructUtils.descKeysFromSU(publicOptHeadStruct);
     }
 
     @Override
     public String getValue(String key) {
-        return StructUtils.getStruct(optHeadStruct, this, key);
+        return StructUtils.getStruct(publicOptHeadStruct, this, key);
     }
 
     @Override
     public IEFB.IFileSection changeValue(String key, String value) {
         PE32FileOptHeadSection gen = new PE32FileOptHeadSection(this);
-        StructUtils.setStruct(optHeadStruct, gen, key, value);
+        StructUtils.setStruct(publicOptHeadStruct, gen, key, value);
         return gen;
     }
 
