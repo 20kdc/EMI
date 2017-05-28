@@ -120,7 +120,7 @@ public class ToolInterface {
         // Arguments dealt with, setup the confirm button & such
 
         JPanel iFrame = new JPanel();
-        iFrame.setLayout(new GridLayout(args.size() + 1, 1));
+        iFrame.setLayout(new GridLayout((args.size() + 2) / 2, 2));
         for (JPanel x : args)
             iFrame.add(x);
         iFrame.add(Main.newButton("Confirm", new Runnable() {
