@@ -35,6 +35,10 @@ public class AlignmentUtil {
     }
 
     public static long roundUp(long position, long sectionAlignment) {
+        if (sectionAlignment < 0)
+            throw new RuntimeException("Bad alignment: " + sectionAlignment);
+        if (sectionAlignment == 0)
+            sectionAlignment = 1;
         if (position % sectionAlignment != 0)
             return (position - (position % sectionAlignment)) + sectionAlignment;
         return position;
