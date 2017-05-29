@@ -24,9 +24,9 @@ import java.io.StringWriter;
  * Created on 5/2/17.
  */
 public class Main {
+    public static DialogSingleton dialogSingleton;
     public static void main(String[] args) throws Exception {
-        final JFrame jf = new JFrame("EMI");
-        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        dialogSingleton = new DialogSingleton();
 
         JPanel jp = new JPanel();
         jp.setBorder(BorderFactory.createTitledBorder("Load..."));
@@ -38,7 +38,7 @@ public class Main {
                 public void run() {
                     JFileChooser jfc = new JFileChooser();
                     IBackend ib = BackendRegistry.get(s);
-                    if (jfc.showOpenDialog(jf) == JFileChooser.APPROVE_OPTION) {
+                    if (jfc.showOpenDialog(dialogSingleton.pureFrame) == JFileChooser.APPROVE_OPTION) {
                         try {
                             FileInputStream fis = new FileInputStream(jfc.getSelectedFile());
                             byte[] data = new byte[fis.available()];
@@ -49,8 +49,7 @@ public class Main {
                             fis.close();
 
                             IBackend.IBackendFile ibf = new LoggingBackendFile(ib.openFile(data));
-                            new PrimaryInterface(ibf, s);
-                            jf.setVisible(false);
+                            new PrimaryInterface(ibf, s).reshow();
                         } catch (Throwable e) {
                             Main.report("While loading file", e);
                         }
@@ -63,18 +62,22 @@ public class Main {
                     IBackend ib = BackendRegistry.get(s);
                     try {
                         IBackend.IBackendFile ibf = new LoggingBackendFile(ib.createFile());
-                        new PrimaryInterface(ibf, s);
-                        jf.setVisible(false);
+                        new PrimaryInterface(ibf, s).reshow();
                     } catch (Throwable e) {
                         Main.report("While creating file", e);
                     }
                 }
             }));
         }
-        jf.setContentPane(jp);
 
-        minimize(jf);
-        Main.visible(jf);
+        dialogSingleton.prepare("EMI", jp, new Runnable() {
+            @Override
+            public void run() {
+                System.exit(0);
+            }
+        });
+
+        dialogSingleton.boot();
     }
 
     public static JButton newButton(String s, final Runnable runnable) {
@@ -110,42 +113,8 @@ public class Main {
         Main.visible(report);
     }
 
-    public static void minimize(final JFrame target) {
-        target.setSize(320, 240);
-        target.pack();
-
-        // This sequence works most of the time, but other times it doesn't.
-        // Set an AWT timer so that if for some reason the flipping framework decides "actually how about we don't layout your component today", it's told to shut up.
-        target.setSize(target.getWidth() * 2, target.getHeight());
-        target.setResizable(false);
-        target.doLayout();
-        target.invalidate();
-        target.layout();
-        final Timer t = new Timer(100, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                // Spam relayout commands. This ALWAYS resolves correctly but can lead to too-large results.
-                // Filed under: "a price one is willing to pay to stop the system getting even worse results", and "fuck swing layouts".
-                target.invalidate();
-                target.doLayout();
-                target.layout();
-                int oldW = target.getWidth(), oldH = target.getHeight();
-                target.setSize(1, 1);
-                target.invalidate();
-                target.doLayout();
-                target.layout();
-                target.setSize(oldW, oldH);
-                target.invalidate();
-                target.doLayout();
-                target.layout();
-            }
-        });
-        t.setRepeats(false);
-        t.start();
-    }
-
     // Make a frame visible and make sure it's focused 500ms later (Accidental click-through causes the WM to show the window behind, and this can actually take >100ms to go through)
-    public static void visible(final JFrame mainFrame) {
+    private static void visible(final JFrame mainFrame) {
         mainFrame.setVisible(true);
         final Timer t = new Timer(500, new ActionListener() {
             @Override

@@ -30,22 +30,23 @@ import java.util.LinkedList;
  * Created on 5/2/17.
  */
 public class PrimaryInterface {
-    public JFrame mainFrame;
     public EMISectionManagement management;
+    private final JPanel mainPanel;
     public final String applicationName;
     public final IBackend.IBackendFile target;
+    private final Killswitch killswitch = new Killswitch();
 
     public PrimaryInterface(final IBackend.IBackendFile ibf_uol, String backendName) {
         target = ibf_uol;
 
         applicationName = "EMI/" + backendName;
 
-        JPanel jp = new JPanel();
-        jp.setLayout(new BorderLayout());
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
 
-        jp.add(new JLabel("<html><code>RVA LEN (fixed/movable):dataLen/physLen:type:name</code><br/><i>Sections typically in file address order.</i></html>"), BorderLayout.NORTH);
+        mainPanel.add(new JLabel("<html><code>RVA LEN (fixed/movable):dataLen/physLen:type:name</code><br/><i>Sections typically in file address order.</i></html>"), BorderLayout.NORTH);
         management = new EMISectionManagement(this);
-        jp.add(management, BorderLayout.CENTER);
+        mainPanel.add(management, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
 
@@ -71,24 +72,16 @@ public class PrimaryInterface {
             bR.add(new Runnable() {
                 @Override
                 public void run() {
+                    if (killswitch.armOrFail())
+                        return;
                     ToolInterface ti = new ToolInterface(applicationName, t, target);
-                    if (ti.mustHideMainwin) {
-                        ti.onDie = new Runnable() {
-                            @Override
-                            public void run() {
-                                management.compileSectionList();
-                                Main.visible(mainFrame);
-                            }
-                        };
-                        mainFrame.setVisible(false);
-                    } else {
-                        ti.onDie = new Runnable() {
-                            @Override
-                            public void run() {
-                                management.compileSectionList();
-                            }
-                        };
-                    }
+                    ti.onDie = new Runnable() {
+                        @Override
+                        public void run() {
+                            management.compileSectionList();
+                            reshow();
+                        }
+                    };
                     ti.start();
                 }
             });
@@ -102,14 +95,17 @@ public class PrimaryInterface {
         for (int i = 0; i < bR.size(); i++)
             buttonPanel.add(Main.newButton(bS.get(i), bR.get(i)));
 
-        jp.add(buttonPanel, BorderLayout.SOUTH);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
 
-        mainFrame = new JFrame(applicationName);
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setContentPane(jp);
-        // Can't be minimized sanely, guess and allow resize in case we're wrong
-        mainFrame.setSize(384, 640);
-        Main.visible(mainFrame);
+    public void reshow() {
+        Main.dialogSingleton.prepareLarge(applicationName, mainPanel, new Runnable() {
+            @Override
+            public void run() {
+                System.exit(0);
+            }
+        });
+        killswitch.disarm();
     }
 
     private boolean commandBlacklisted(String dat) {

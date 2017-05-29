@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.function.BooleanSupplier;
 
 /**
  * Responsible for building sub-UI stuff for modification of arguments.
@@ -23,7 +24,7 @@ public class ArgBuilder {
     public JButton jbt;
     public String jbtValue;
 
-    public ArgBuilder(final String type, final LinkedList<String> w, final LinkedList<String> wD, final String oldval, final Runnable hidePar, final Runnable showPar) {
+    public ArgBuilder(final String type, final LinkedList<String> w, final LinkedList<String> wD, final String oldval, final BooleanSupplier hidePar, final Runnable showPar) {
         if (type.equals("enum") || type.equals("flags")) {
             String text = oldval;
             if (!type.equals("flags"))
@@ -32,46 +33,9 @@ public class ArgBuilder {
             piece = jbt = Main.newButton(text, new Runnable() {
                 @Override
                 public void run() {
-                    hidePar.run();
-                    final JFrame jf = new JFrame("Set value...");
-                    jf.setSize(320, 240);
+                    if (hidePar.getAsBoolean())
+                        return;
                     final JList jp = new JList();
-                    jf.setContentPane(new JScrollPane(jp));
-                    jf.addWindowListener(new WindowListener() {
-                        @Override
-                        public void windowOpened(WindowEvent windowEvent) {
-                        }
-
-                        @Override
-                        public void windowClosing(WindowEvent windowEvent) {
-                            if (type.equals("flags")) {
-                                finishFlags(jp);
-                            } else {
-                                finishEnum(jp);
-                            }
-                            showPar.run();
-                        }
-
-                        @Override
-                        public void windowClosed(WindowEvent windowEvent) {
-                        }
-
-                        @Override
-                        public void windowIconified(WindowEvent windowEvent) {
-                        }
-
-                        @Override
-                        public void windowDeiconified(WindowEvent windowEvent) {
-                        }
-
-                        @Override
-                        public void windowActivated(WindowEvent windowEvent) {
-                        }
-
-                        @Override
-                        public void windowDeactivated(WindowEvent windowEvent) {
-                        }
-                    });
                     // damned if you do, damned if you don't
                     DefaultListModel dlm = new DefaultListModel();
                     jp.setModel(dlm);
@@ -82,8 +46,17 @@ public class ArgBuilder {
                     } else {
                         showEnum(jp);
                     }
-                    Main.minimize(jf);
-                    Main.visible(jf);
+                    Main.dialogSingleton.prepare("Select value...", new JScrollPane(jp), new Runnable() {
+                        @Override
+                        public void run() {
+                            if (type.equals("flags")) {
+                                finishFlags(jp);
+                            } else {
+                                finishEnum(jp);
+                            }
+                            showPar.run();
+                        }
+                    });
                 }
 
                 // This fills the contents of the frame.

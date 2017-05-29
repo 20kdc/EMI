@@ -23,7 +23,7 @@ public class EMISectionManagement extends Canvas {
     public EMISectionManagement(PrimaryInterface intf) {
         theInterface = intf;
         compileSectionList();
-        setMinimumSize(new Dimension(32, 16));
+        setMinimumSize(new Dimension(32, 200));
     }
 
     public void compileSectionList() {

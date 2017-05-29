@@ -13,14 +13,19 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.FileOutputStream;
 import java.util.LinkedList;
+import java.util.function.BooleanSupplier;
 
 /**
  * The interface for using a tool.
  * Created on 5/4/17.
  */
 public class ToolInterface {
-    final Runnable startBehavior;
-    public final boolean mustHideMainwin;
+    private final Killswitch killswitch = new Killswitch();
+    private final Runnable startBehavior;
+
+    // Just internal consistency checking.
+    // "Does this tool ever create any modal windows?"
+    private final boolean mustHideMainwin;
     public Runnable onDie = new Runnable() {
         @Override
         public void run() {
@@ -28,6 +33,7 @@ public class ToolInterface {
     };
     public ToolInterface(final String appPrefix, final ITool tool, final IBackend.IBackendFile ibf) {
         final String[] cmd = tool.getDefinition();
+        final String title = appPrefix + "/" + cmd[0];
         if (cmd.length == 1) {
             // There are no parameters, so go with a special-case.
             mustHideMainwin = !tool.instantResponse();
@@ -47,14 +53,6 @@ public class ToolInterface {
         // EMI is meant to be a *cleaner* rewrite of PEONS, not a *worse* rewrite.
         // I guess if argument parsing and compiling was in one class, and the "IArg" classes had the UI building stuff?
         // That would solve two problems at once, and the result would be similar to PrimaryInterface in terms of complexity.
-
-        final JFrame mainFrame = new JFrame(appPrefix + "/" + cmd[0]);
-        startBehavior = new Runnable() {
-            @Override
-            public void run() {
-                Main.visible(mainFrame);
-            }
-        };
 
         // Build the dialog. Kind of a monolith?
         LinkedList<JPanel> args = new LinkedList<JPanel>();
@@ -101,15 +99,17 @@ public class ToolInterface {
                 defaultval = words.getFirst();
             if (defvalset != null)
                 defaultval = defvalset[args.size()];
-            ArgBuilder res = new ArgBuilder(type, words, wordsDisplay, defaultval, new Runnable() {
+            ArgBuilder res = new ArgBuilder(type, words, wordsDisplay, defaultval, new BooleanSupplier() {
                 @Override
-                public void run() {
-                    mainFrame.setVisible(false);
+                public boolean getAsBoolean() {
+                    // Leaving this context. ArgBuilder expects this result.
+                    return killswitch.armOrFail();
                 }
             }, new Runnable() {
                 @Override
                 public void run() {
-                    Main.visible(mainFrame);
+                    // Entering this context.
+                    startBehavior.run();
                 }
             });
             arg.add(res.piece);
@@ -119,64 +119,44 @@ public class ToolInterface {
 
         // Arguments dealt with, setup the confirm button & such
 
-        JPanel iFrame = new JPanel();
+        final JPanel iFrame = new JPanel();
         iFrame.setLayout(new GridLayout((args.size() + 2) / 2, 2));
         for (JPanel x : args)
             iFrame.add(x);
+
         iFrame.add(Main.newButton("Confirm", new Runnable() {
             @Override
             public void run() {
-                mainFrame.setVisible(false);
+                if (killswitch.armOrFail())
+                    return;
                 String[] args = new String[argBuilders.size() + 1];
                 args[0] = cmd[0];
                 for (int i = 0; i < args.length - 1; i++)
                     args[i + 1] = argBuilders.get(i).getResult();
-                executeTool(appPrefix, new Runnable() {
-                    @Override
-                    public void run() {
-                        Main.visible(mainFrame);
-                    }
-                }, tool, args, ibf);
+                executeTool(appPrefix, startBehavior, tool, args, ibf);
             }
         }));
-        mainFrame.setContentPane(iFrame);
 
-        mainFrame.addWindowListener(new WindowListener() {
+        startBehavior = new Runnable() {
             @Override
-            public void windowOpened(WindowEvent windowEvent) {
+            public void run() {
+                Main.dialogSingleton.prepare(title, iFrame, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (killswitch.armOrFail())
+                            return;
+                        onDie.run();
+                    }
+                });
+                killswitch.disarm();
             }
-
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                onDie.run();
-            }
-
-            @Override
-            public void windowClosed(WindowEvent windowEvent) {
-            }
-
-            @Override
-            public void windowIconified(WindowEvent windowEvent) {
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent windowEvent) {
-            }
-
-            @Override
-            public void windowActivated(WindowEvent windowEvent) {
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent windowEvent) {
-            }
-        });
-        Main.minimize(mainFrame);
+        };
     }
 
     private void executeTool(String appPrefix, Runnable reshow, ITool tool, String[] args, IBackend.IBackendFile ibf) {
         try {
             ITool next = tool.execute(args);
+            // Note that in the "completed" and "next tool" cases, this instance remains eternally armed.
             if (next == null) {
                 onDie.run();
             } else if (next != tool) {
