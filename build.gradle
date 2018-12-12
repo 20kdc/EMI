@@ -1,0 +1,22 @@
+apply plugin: "java"
+apply plugin: "eclipse"
+apply plugin: "idea"
+apply plugin: "application"
+
+dependencies {
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = "emi"
+archivesBaseName = "emi"
+
+// This is used for "application"
+mainClassName = "emi.frontend.Main"
+
+jar {
+    manifest {
+        attributes 'Main-Class': "emi.frontend.Main"
+    }
+}

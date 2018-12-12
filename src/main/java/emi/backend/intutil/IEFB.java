@@ -13,6 +13,7 @@ import java.io.IOException;
  * Created on 4/28/17.
  */
 public interface IEFB {
+
     // This is meant to be immutable.
     // It can be internally mutable until the object leaves the API.
     interface IFileSection {
@@ -79,4 +80,6 @@ public interface IEFB {
     void changeSections(IFileSection[] file);
 
     byte[] saveFile();
+
+    String[] verifyFile();
 }

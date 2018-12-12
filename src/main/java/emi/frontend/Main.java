@@ -14,10 +14,7 @@ import javax.swing.text.DefaultStyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 
 /**
  * GUI frontend.
@@ -37,6 +34,7 @@ public class Main {
                 @Override
                 public void run() {
                     JFileChooser jfc = new JFileChooser();
+                    jfc.setCurrentDirectory(new File("."));
                     IBackend ib = BackendRegistry.get(s);
                     if (jfc.showOpenDialog(dialogSingleton.pureFrame) == JFileChooser.APPROVE_OPTION) {
                         try {

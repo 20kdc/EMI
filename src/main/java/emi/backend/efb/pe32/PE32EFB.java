@@ -19,8 +19,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import static javax.swing.UIManager.getInt;
-
 /**
  * The EFB for 32-bit PE files.
  * Created on 4/28/17.
@@ -350,5 +348,11 @@ public class PE32EFB implements IEFB {
                 bb.put(ifs.data());
         }
         return r;
+    }
+
+    @Override
+    public String[] verifyFile() {
+        // Need to work out how this code works later... blegh.
+        return null;
     }
 }

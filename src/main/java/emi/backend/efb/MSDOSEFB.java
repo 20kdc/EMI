@@ -267,4 +267,9 @@ public class MSDOSEFB implements IEFB {
         bb.put(waste.d);
         return b;
     }
+
+    @Override
+    public String[] verifyFile() {
+        return null;
+    }
 }

@@ -55,9 +55,10 @@ class EFBWrapperBackend implements IBackend {
                             "set-section-value section section-idx key str value str",
                             "remove-section section section-idx",
                             "swap-sections section section-idx section section-idx",
+                            "verify-file",
                             "dl-set-section section section-idx",
                             "ds-get-section section section-idx",
-                            "ds-save"
+                            "ds-save",
                     };
                 }
                 if (arguments[0].equals("list-sections")) {
@@ -76,8 +77,7 @@ class EFBWrapperBackend implements IBackend {
                         r[i] += ":" + LongUtils.longToHexval(s.data().length) + "/" + LongUtils.longToHexval(s.fileDataLength()) + ":" + s.type() + ":" + s.name();
                     }
                     return r;
-                }
-                if (arguments[0].equals("create-section")) {
+                } else if (arguments[0].equals("create-section")) {
                     checkArgs(new boolean[]{false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     IEFB.IFileSection[] fs2 = new IEFB.IFileSection[fs.length + 1];
@@ -88,8 +88,7 @@ class EFBWrapperBackend implements IBackend {
                     return new String[]{
                             "Successfully created section."
                     };
-                }
-                if (arguments[0].equals("set-section-rva")) {
+                } else if (arguments[0].equals("set-section-rva")) {
                     Long[] sn = checkArgs(new boolean[]{true, false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     fs[(int) (long) sn[0]] = ((IEFB.IVMFileSection) fs[(int) (long) sn[0]]).move(LongUtils.hexvalToLong(arguments[2]));
@@ -97,8 +96,7 @@ class EFBWrapperBackend implements IBackend {
                     return new String[]{
                             "Successfully moved section."
                     };
-                }
-                if (arguments[0].equals("set-section-len")) {
+                } else if (arguments[0].equals("set-section-len")) {
                     Long[] sn = checkArgs(new boolean[]{true, false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     fs[(int) (long) sn[0]] = ((IEFB.IVMFileSection) fs[(int) (long) sn[0]]).changedLength(LongUtils.hexvalToLong(arguments[2]));
@@ -106,26 +104,22 @@ class EFBWrapperBackend implements IBackend {
                     return new String[]{
                             "Successfully moved section."
                     };
-                }
-                if (arguments[0].equals("list-section-keys")) {
+                } else if (arguments[0].equals("list-section-keys")) {
                     Long[] sn = checkArgs(new boolean[]{true}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     return fs[(int) (long) sn[0]].describeKeys();
-                }
-                if (arguments[0].equals("get-section-value")) {
+                } else if (arguments[0].equals("get-section-value")) {
                     Long[] sn = checkArgs(new boolean[]{true, false}, arguments);
                     IEFB.IFileSection fs = r.fileSections()[(int) (long) sn[0]];
                     return new String[]{fs.getValue(arguments[2])};
-                }
-                if (arguments[0].equals("set-section-value")) {
+                } else if (arguments[0].equals("set-section-value")) {
                     Long[] sn = checkArgs(new boolean[]{true, false, false}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     IEFB.IFileSection fsb = fs[(int) (long) sn[0]];
                     fs[(int) (long) sn[0]] = fsb.changeValue(arguments[2], arguments[3]);
                     r.changeSections(fs);
                     return new String[]{"Value changed successfully."};
-                }
-                if (arguments[0].equals("remove-section")) {
+                } else if (arguments[0].equals("remove-section")) {
                     int sn = (int) (long) (checkArgs(new boolean[]{true}, arguments)[0]);
                     IEFB.IFileSection[] fs = r.fileSections();
                     IEFB.IFileSection[] fs2 = new IEFB.IFileSection[fs.length - 1];
@@ -137,8 +131,7 @@ class EFBWrapperBackend implements IBackend {
                     return new String[]{
                             "Successfully removed section."
                     };
-                }
-                if (arguments[0].equals("swap-sections")) {
+                } else if (arguments[0].equals("swap-sections")) {
                     Long[] sn = checkArgs(new boolean[]{true, true}, arguments);
                     IEFB.IFileSection[] fs = r.fileSections();
                     IEFB.IFileSection a = fs[(int) (long) sn[0]];
@@ -149,6 +142,13 @@ class EFBWrapperBackend implements IBackend {
                     return new String[]{
                             "Successfully swapped sections."
                     };
+                } else if (arguments[0].equals("verify-file")) {
+                    String[] lines = r.verifyFile();
+                    if (lines == null)
+                        return new String[]{
+                                "Verification successful."
+                        };
+                    return lines;
                 }
                 throw new RuntimeException("No such command " + arguments[0]);
             }
